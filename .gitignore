@@ -51,6 +51,11 @@ data/*.db*
 *.swp
 *.swo
 
+# Documentation & Internal Notes
+Docs/
+docs/
+
 # OS files
 .DS_Store
 Thumbs.db
+
