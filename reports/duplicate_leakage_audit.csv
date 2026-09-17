@@ -1,0 +1,13 @@
+source,artifact_type,regex_pattern,match_count,percentage,severity
+indian_job_scam,Explicit 'Job Posting:' prefix,^Job Posting:\s*,2473,77.28,HIGH
+indian_job_scam,Explicit 'Selected for' offer template,^Selected for\s*,65,2.03,LOW
+indian_job_scam,Explicit 'Notification:' alert prefix,^Notification:\s*,58,1.81,LOW
+spam_promotional,"Structured prompt fields (Content type, Reference, Text)",^(?:Content type:\s*|Subject:\s*|Body:\s*|Reference:\s*SYN-|Text:\s*),9998,100.0,HIGH
+spam_promotional,Prompt-attack meta-language in text,prompt_attack|prompt_injection|instruction override|system prompt|assistant,362,3.62,LOW
+phishing_email,Subject header formatting,^(?:Subject:\s*),82045,99.58,HIGH
+phishing_email,Enron specific corporate email routing artifacts,(?:forwarded by|hpl nom|enron\.com|ect\.da),2848,3.46,LOW
+all_sources,Direct classification leak,\bclassification:\s*(?:fake|real|spam)\b,2,0.0018,LOW
+all_sources,Red flags explanation remnant,\bred flags:\b,0,0.0,NONE
+all_sources,Self-referential 'phishing-labelled' wording,\bphishing-labelled email\b,0,0.0,NONE
+all_sources,Obvious prompt injection payload,\bignore all previous instructions\b,76,0.0682,HIGH
+all_sources,Explicit prompt injection mention,\bprompt injection\b,8,0.0072,LOW

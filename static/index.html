@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerShield Mail - Intelligent ML & NLP Email Threat Shield</title>
+    <!-- Google Fonts: Plus Jakarta Sans, Inter, Outfit, Fira Code & Playfair Display -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for ML Visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="dark-theme">
+    <!-- MAC-STYLE APP FRAME CONTAINER -->
+    <div class="mac-app-window">
+        <!-- SINGLE UNIFIED LEFT SIDEBAR -->
+        <aside class="sidebar-unified" id="sidebar">
+            <!-- macOS Window Controls + Brand -->
+            <div class="sidebar-top-header">
+                <div class="window-controls">
+                    <span class="control-dot dot-close" title="Close"></span>
+                    <span class="control-dot dot-minimize" title="Minimize"></span>
+                    <span class="control-dot dot-expand" title="Expand"></span>
+                </div>
+                <div class="unified-brand">
+                    <div class="logo-shield-glow">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3z"/>
+                        </svg>
+                    </div>
+                    <div class="brand-text-block">
+                        <span class="brand-name">CareerShield <span class="brand-sub">Mail</span></span>
+                        <span class="brand-badge">ML</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Compose Button -->
+            <div class="compose-action-container">
+                <button class="compose-pill-btn" id="openComposeBtn" title="Compose & Live Scan">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>Compose & Scan</span>
+                </button>
+            </div>
+
+            <!-- Navigation Area -->
+            <div class="sidebar-scrollable-content">
+                <div class="sidebar-section-label">FOLDERS</div>
+                <nav class="sidebar-nav">
+                    <ul class="nav-list">
+                        <li class="nav-item active" data-folder="inbox">
+                            <a href="javascript:void(0)" class="nav-link">
+                                <span class="nav-icon-wrapper">
+                                    <svg class="nav-svg-icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                                        <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 11h-4.18c-.41.6-1.09 1-1.82 1s-1.41-.4-1.82-1H5V5h14v9z"/>
+                                    </svg>
+                                </span>
+                                <span class="nav-text">Inbox (Clean)</span>
+                                <span class="badge badge-clean" id="inboxBadge">21</span>
+                            </a>
+                        </li>
+                        <li class="nav-item" data-folder="spam">
+                            <a href="javascript:void(0)" class="nav-link">
+                                <span class="nav-icon-wrapper">
+                                    <svg class="nav-svg-icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                                        <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+                                    </svg>
+                                </span>
+                                <span class="nav-text">Spam / Quarantine</span>
+                                <span class="badge badge-danger" id="spamBadge">29</span>
+                            </a>
+                        </li>
+                        <li class="nav-item" data-folder="all">
+                            <a href="javascript:void(0)" class="nav-link">
+                                <span class="nav-icon-wrapper">
+                                    <svg class="nav-svg-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect width="20" height="16" x="2" y="4" rx="2"/>
+                                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                                    </svg>
+                                </span>
+                                <span class="nav-text">All Mail</span>
+                                <span class="badge badge-neutral" id="allBadge">50</span>
+                            </a>
+                        </li>
+                        <li class="nav-item" data-folder="starred">
+                            <a href="javascript:void(0)" class="nav-link">
+                                <span class="nav-icon-wrapper">
+                                    <svg class="nav-svg-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                    </svg>
+                                </span>
+                                <span class="nav-text">Starred</span>
+                            </a>
+                        </li>
+                        <li class="nav-item" data-folder="sent">
+                            <a href="javascript:void(0)" class="nav-link">
+                                <span class="nav-icon-wrapper">
+                                    <svg class="nav-svg-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="m22 2-7 20-4-9-9-4Z"/>
+                                        <path d="M22 2 11 13"/>
+                                    </svg>
+                                </span>
+                                <span class="nav-text">Sent</span>
+                            </a>
+                        </li>
+                        <li class="nav-item" data-folder="trash">
+                            <a href="javascript:void(0)" class="nav-link">
+                                <span class="nav-icon-wrapper">
+                                    <svg class="nav-svg-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M3 6h18"/>
+                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                                        <line x1="10" x2="10" y1="11" x2="17"/>
+                                        <line x1="14" x2="14" y1="11" x2="17"/>
+                                    </svg>
+                                </span>
+                                <span class="nav-text">Trash</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="sidebar-divider"></div>
+
+                    <div class="sidebar-section-label">THREAT TAXONOMY</div>
+                    <ul class="nav-list category-list">
+                        <li class="category-item" data-category="Fake Job Scam">
+                            <span class="cat-dot cat-fakejob"></span>
+                            <span class="cat-name">Fake Job Scams</span>
+                        </li>
+                        <li class="category-item" data-category="Brand Impersonation Phishing">
+                            <span class="cat-dot cat-phishing"></span>
+                            <span class="cat-name">Brand Spoofing</span>
+                        </li>
+                        <li class="category-item" data-category="Task Scam / Financial Fraud">
+                            <span class="cat-dot cat-task"></span>
+                            <span class="cat-name">Task Scams</span>
+                        </li>
+                        <li class="category-item" data-category="Legitimate Job Offer">
+                            <span class="cat-dot cat-legit"></span>
+                            <span class="cat-name">Legitimate Jobs</span>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Sidebar Unified Footer -->
+            <div class="sidebar-unified-footer">
+                <div class="system-status-card">
+                    <div class="status-indicator">
+                        <span class="pulse-dot"></span>
+                        <span class="status-title">ML Threat Shield</span>
+                    </div>
+                    <div class="status-desc">Real-time NLP + 22 Cyber Heuristics</div>
+                </div>
+                <div class="footer-action-row">
+                    <button class="rail-footer-btn" id="railStatusToggle" title="ML Defense Shield Active">
+                        <span class="rail-status-pulse"></span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v2h-2V7zm0 4h2v6h-2v-6z"/>
+                        </svg>
+                    </button>
+                    <button class="rail-footer-btn" id="railThemeBtn" title="Toggle Theme">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN INTERFACE BODY (HEADER + WORKSPACE) -->
+        <div class="app-main-layout">
+            <!-- TOP APP BAR / HEADER -->
+            <header class="app-header">
+                <div class="header-left">
+                    <div class="search-bar">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="searchInput" placeholder="Search mail, sender, threat signals, keywords..." autocomplete="off">
+                        <button class="clear-search-btn" id="clearSearchBtn" style="display: none;"><i class="fa-solid fa-xmark"></i></button>
+                        <span class="search-kbd-shortcut">⌘K</span>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <!-- Active Model Selector Pill in Header -->
+                    <div class="model-pill" id="headerModelSelector">
+                        <div class="model-pill-icon"><i class="fa-solid fa-brain"></i></div>
+                        <span class="model-label">Engine:</span>
+                        <select id="activeModelSelect" title="Select Machine Learning Model">
+                            <option value="Stacking Ensemble" selected>Stacking Ensemble (Recommended)</option>
+                            <option value="Naive Bayes">Multinomial Naive Bayes</option>
+                            <option value="Logistic Regression">Logistic Regression (L2)</option>
+                            <option value="Support Vector Machine">Support Vector Machine (Calibrated)</option>
+                            <option value="Random Forest">Random Forest (150 Trees)</option>
+                            <option value="XGBoost">XGBoost Classifier</option>
+                            <option value="Gradient Boosting">Gradient Boosting</option>
+                            <option value="Deep Neural Net (MLP)">Deep Neural Net (MLP)</option>
+                        </select>
+                    </div>
+
+                    <!-- Connect Real Gmail Button -->
+                    <button class="btn btn-gmail-connect" id="openGmailConnectBtn">
+                        <i class="fa-brands fa-google"></i>
+                        <span id="gmailConnectBtnText">Connect Real Gmail</span>
+                        <span class="gmail-status-dot" id="gmailStatusDot"></span>
+                    </button>
+
+                    <!-- Open ML Research Lab Button -->
+                    <button class="btn btn-secondary research-btn" id="openResearchLabBtn">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <span>ML Research Lab</span>
+                    </button>
+
+                    <!-- User Profile Avatar -->
+                    <div class="user-avatar-pill" id="userAvatar" title="ml-intern@cybersecurity.corp">
+                        <div class="avatar-circle">YS</div>
+                        <span class="avatar-online-dot"></span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- WORKSPACE AREA: CONTENT (LIST & DETAIL) -->
+            <div class="workspace-body">
+
+                <!-- MAIN WORK AREA (EMAIL LIST & DETAIL INSPECTOR) -->
+                <main class="main-content" id="mainContent">
+                    <!-- TOOLBAR -->
+                    <div class="mail-toolbar">
+                        <div class="toolbar-left">
+                            <h2 class="inbox-heading" id="inboxViewHeading">Inbox</h2>
+                            
+                            <button class="icon-btn-round" id="refreshBtn" title="Refresh feed (Live IMAP sync)">
+                                <i class="fa-solid fa-rotate-right"></i>
+                            </button>
+                            
+                            <button class="btn btn-simulate" id="simulateIncomingBtn" title="Fetch latest real emails or simulate stream">
+                                <i class="fa-solid fa-bolt"></i>
+                                <span id="syncBtnText">Sync Live Gmail</span>
+                            </button>
+                            
+                            <!-- Live / Demo Badge -->
+                            <span class="feed-source-badge sim" id="feedSourceBadge">
+                                <i class="fa-solid fa-flask"></i>
+                                <span>Demo Simulation</span>
+                            </span>
+
+                            <!-- Folder Selector Dropdown -->
+                            <select class="toolbar-select" id="gmailFolderSelect" title="Select Gmail mailbox folder to scan">
+                                <option value="INBOX" selected>📁 Inbox</option>
+                                <option value="[Gmail]/All Mail">📬 All Mail</option>
+                                <option value="[Gmail]/Spam">⚠️ Spam / Junk</option>
+                                <option value="[Gmail]/Sent Mail">📤 Sent Mail</option>
+                            </select>
+                        </div>
+
+                        <div class="toolbar-filters">
+                            <button class="filter-chip active" data-filter="all">All</button>
+                            <button class="filter-chip" data-filter="verified">Verified Safe</button>
+                            <button class="filter-chip" data-filter="suspicious">Suspicious</button>
+                            <button class="filter-chip" data-filter="critical">Critical Threat</button>
+                        </div>
+
+                        <div class="toolbar-right">
+                            <span class="mail-counter" id="mailCounter">Loading...</span>
+                            
+                            <!-- Pagination Buttons -->
+                            <button class="icon-btn-sm" id="prevPageBtn" title="Newer emails"><i class="fa-solid fa-chevron-left"></i></button>
+                            <button class="icon-btn-sm" id="nextPageBtn" title="Older emails"><i class="fa-solid fa-chevron-right"></i></button>
+                            
+                            <!-- Batch Fetch Option -->
+                            <button class="btn btn-sm btn-outline" id="load100Btn" title="Fetch 100 latest emails from Gmail via IMAP">
+                                <i class="fa-solid fa-cloud-arrow-down"></i> <span>Fetch 100</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- EMAIL LIST CONTAINER -->
+                    <div class="email-list-container" id="emailListContainer">
+                        <div class="email-list" id="emailList">
+                            <!-- Email cards dynamically rendered here -->
+                        </div>
+                        <div class="email-list-footer" id="emailListFooter" style="display: none;">
+                            <button class="btn btn-secondary" id="footerNextPageBtn">
+                                <i class="fa-solid fa-arrow-down"></i> <span id="footerBtnText">Load Next Page (Older Emails)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- EMAIL DETAIL & CYBER INSPECTOR VIEW (SPLIT / FULL VIEW) -->
+                    <div class="email-detail-container" id="emailDetailContainer" style="display: none;">
+                        <div class="detail-header-bar">
+                            <div class="detail-header-left">
+                                <button class="icon-btn back-btn" id="backToListBtn" title="Back to Inbox">
+                                    <i class="fa-solid fa-arrow-left"></i>
+                                </button>
+                                <span class="detail-view-breadcrumb"><i class="fa-regular fa-folder"></i> <span id="detailBreadcrumbFolder">Inbox</span> &gt; Email Details</span>
+                            </div>
+                            <div class="detail-actions">
+                                <button class="icon-btn-round" id="starDetailBtn" title="Star email"><i class="fa-regular fa-star"></i></button>
+                                <button class="icon-btn-round" id="deleteDetailBtn" title="Delete email"><i class="fa-regular fa-trash-can"></i></button>
+                                <button class="btn btn-danger-soft" id="reportPhishingBtn"><i class="fa-solid fa-shield-virus"></i> Quarantine</button>
+                            </div>
+                        </div>
+
+                        <div class="detail-content-wrapper">
+                            <!-- LEFT/CENTER: EMAIL READER & FORENSICS -->
+                            <div class="detail-mail-view">
+                                <div class="detail-subject-wrapper">
+                                    <h2 class="mail-subject" id="detailSubject">Subject Title</h2>
+                                </div>
+                                
+                                <div class="sender-info-card">
+                                    <div class="sender-avatar" id="detailAvatar">A</div>
+                                    <div class="sender-meta">
+                                        <div class="sender-title">
+                                            <strong id="detailSenderName">Sender Name</strong>
+                                            <span class="sender-email" id="detailSenderEmail">&lt;sender@domain.com&gt;</span>
+                                        </div>
+                                        <div class="sender-sub">
+                                            <span class="sender-time" id="detailDate">10:45 AM</span>
+                                            <span class="security-tag" id="detailSecurityTag"><i class="fa-solid fa-circle-check"></i> Verified Domain</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Security Alert Banner (if threat) -->
+                                <div class="security-banner" id="securityBanner">
+                                    <div class="banner-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                                    <div class="banner-text">
+                                        <strong>CareerShield ML Threat Detection:</strong> This email was classified as <span id="bannerThreatText">Critical Phishing Threat</span> by the active classifier. Exercise extreme caution with links, attachments, or credentials.
+                                    </div>
+                                </div>
+
+                                <!-- HUMAN-IN-THE-LOOP FEEDBACK BAR -->
+                                <div class="feedback-action-bar" id="feedbackActionBar">
+                                    <div class="feedback-prompt-col">
+                                        <div class="feedback-title">
+                                            <i class="fa-solid fa-user-shield text-primary"></i> <strong>Human-in-the-Loop Feedback:</strong>
+                                        </div>
+                                        <div class="feedback-subtitle">Help calibrate the model with verified feedback on this message.</div>
+                                    </div>
+                                    <div class="feedback-btn-group">
+                                        <button class="btn btn-fb btn-fb-safe" id="btnFeedbackSafe" data-label="SAFE" title="Useful & Legitimate - Eligible for continuous learning">
+                                            <i class="fa-solid fa-check"></i> <span>Useful / Safe</span>
+                                        </button>
+                                        <button class="btn btn-fb btn-fb-spam" id="btnFeedbackSpam" data-label="SPAM" title="Phishing Scam / Malicious - Eligible for continuous learning">
+                                            <i class="fa-solid fa-xmark"></i> <span>Not Useful / Spam</span>
+                                        </button>
+                                        <button class="btn btn-fb btn-fb-unsure" id="btnFeedbackUnsure" data-label="UNSURE" title="Uncertain - Save for personal review (Never directly used for training)">
+                                            <i class="fa-solid fa-question"></i> <span>Unsure</span>
+                                        </button>
+                                    </div>
+                                    <div class="feedback-state-indicator" id="feedbackStateIndicator" style="display: none;">
+                                        <span class="badge" id="feedbackSavedBadge">✓ Feedback Recorded</span>
+                                    </div>
+                                </div>
+
+                                <!-- Email Body Box (With Token Highlight Support) -->
+                                <div class="email-body-box">
+                                    <div class="body-view-tabs">
+                                        <div class="tabs-left">
+                                            <button class="body-tab active" id="tabFormattedText">
+                                                <i class="fa-solid fa-wand-magic-sparkles"></i> Highlighted Security X-Ray
+                                            </button>
+                                            <button class="body-tab" id="tabRawText">
+                                                <i class="fa-solid fa-code"></i> Plain Text View
+                                            </button>
+                                        </div>
+                                        <div class="xray-legend" id="xrayLegend">
+                                            <span class="xray-pill pill-risk" title="Detected Malicious & Scam Indicators"><i class="fa-solid fa-triangle-exclamation"></i> <span id="xrayRiskCount">0</span> Threats</span>
+                                            <span class="xray-pill pill-safe" title="Verified Authentic Career Signals"><i class="fa-solid fa-circle-check"></i> <span id="xraySafeCount">0</span> Authentic</span>
+                                        </div>
+                                    </div>
+                                    <div class="email-body-content" id="detailBodyFormatted">
+                                        <!-- Highlighted tokens rendered dynamically -->
+                                    </div>
+                                    <div class="email-body-raw" id="detailBodyRaw" style="display: none;">
+                                        <!-- Plain text -->
+                                    </div>
+                                </div>
+
+                                <!-- Attachments Preview Card (Image 3 Inspiration) -->
+                                <div class="attachments-preview-box">
+                                    <div class="attachments-header">
+                                        <i class="fa-solid fa-paperclip"></i>
+                                        <span>Security Analyzed Attachments (0 detected threats)</span>
+                                    </div>
+                                    <div class="attachments-grid">
+                                        <div class="attachment-pill">
+                                            <div class="attachment-icon pdf"><i class="fa-solid fa-file-pdf"></i></div>
+                                            <div class="attachment-info">
+                                                <span class="attachment-name">Security_Assessment.pdf</span>
+                                                <span class="attachment-size">2.4 MB • Clean Sandbox</span>
+                                            </div>
+                                        </div>
+                                        <div class="attachment-pill">
+                                            <div class="attachment-icon doc"><i class="fa-solid fa-file-lines"></i></div>
+                                            <div class="attachment-info">
+                                                <span class="attachment-name">Offer_Details.docx</span>
+                                                <span class="attachment-size">1.1 MB • Safe Scan</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Rich Bottom Reply & Composer Card (Image 3 & 4 Inspiration) -->
+                                <div class="detail-reply-box">
+                                    <div class="reply-card-header">
+                                        <div class="reply-recipient-tag">
+                                            <span>Reply To:</span>
+                                            <strong id="replyRecipientName">Sender</strong>
+                                        </div>
+                                        <div class="reply-actions-right">
+                                            <span class="reply-status-text">Encrypted Channel</span>
+                                        </div>
+                                    </div>
+                                    <div class="reply-formatting-toolbar">
+                                        <button type="button" class="tool-btn" title="Bold"><i class="fa-solid fa-bold"></i></button>
+                                        <button type="button" class="tool-btn" title="Italic"><i class="fa-solid fa-italic"></i></button>
+                                        <button type="button" class="tool-btn" title="Underline"><i class="fa-solid fa-underline"></i></button>
+                                        <button type="button" class="tool-btn" title="Strikethrough"><i class="fa-solid fa-strikethrough"></i></button>
+                                        <span class="tool-divider"></span>
+                                        <button type="button" class="tool-btn" title="Align Left"><i class="fa-solid fa-align-left"></i></button>
+                                        <button type="button" class="tool-btn" title="Bullet List"><i class="fa-solid fa-list-ul"></i></button>
+                                        <button type="button" class="tool-btn" title="Numbered List"><i class="fa-solid fa-list-ol"></i></button>
+                                        <button type="button" class="tool-btn" title="Insert Link"><i class="fa-solid fa-link"></i></button>
+                                        <button type="button" class="tool-btn" title="Attach File"><i class="fa-solid fa-paperclip"></i></button>
+                                    </div>
+                                    <textarea class="reply-textarea" placeholder="Type a secure response..."></textarea>
+                                    <div class="reply-card-footer">
+                                        <div class="reply-footer-left">
+                                            <button class="icon-btn-sm" title="Discard draft"><i class="fa-regular fa-trash-can"></i></button>
+                                            <button class="icon-btn-sm" title="More options"><i class="fa-solid fa-ellipsis"></i></button>
+                                        </div>
+                                        <div class="reply-footer-right">
+                                            <button class="btn btn-primary btn-send-now" onclick="showToast('Reply queued in secure dispatch outbox!')">
+                                                <i class="fa-solid fa-paper-plane"></i>
+                                                <span>Send now</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- RIGHT: ML CYBER THREAT INSPECTOR (X-RAY FORENSICS) -->
+                            <div class="cyber-inspector-panel" id="inspectorPanel">
+                                <div class="inspector-header">
+                                    <div class="inspector-title">
+                                        <i class="fa-solid fa-microscope text-primary"></i>
+                                        <span>ML Cyber Threat Inspector</span>
+                                    </div>
+                                </div>
+
+                                <!-- RISK GAUGE -->
+                                <div class="risk-gauge-card">
+                                    <div class="gauge-header">
+                                        <span>Calculated Risk Probability</span>
+                                        <span class="risk-percentage" id="inspectorRiskScore">0%</span>
+                                    </div>
+                                    <div class="progress-bar-bg">
+                                        <div class="progress-bar-fill" id="inspectorProgressBar" style="width: 0%;"></div>
+                                    </div>
+                                    <div class="threat-level-badge" id="inspectorThreatLevel">SAFE</div>
+                                </div>
+
+                                <!-- MODEL SELECTOR FOR THIS EMAIL -->
+                                <div class="inspector-section">
+                                    <label class="section-label"><i class="fa-solid fa-sliders"></i> Active Classifier Algorithm</label>
+                                    <select class="inspector-select" id="inspectorModelSelect">
+                                        <option value="Stacking Ensemble">Stacking Ensemble</option>
+                                        <option value="Naive Bayes">Multinomial Naive Bayes</option>
+                                        <option value="Logistic Regression">Logistic Regression (L2)</option>
+                                        <option value="Support Vector Machine">Support Vector Machine</option>
+                                        <option value="Random Forest">Random Forest</option>
+                                        <option value="XGBoost">XGBoost Classifier</option>
+                                        <option value="Gradient Boosting">Gradient Boosting</option>
+                                        <option value="Deep Neural Net (MLP)">Deep Neural Net (MLP)</option>
+                                    </select>
+                                </div>
+
+                                <!-- DETECTED CYBERSECURITY SIGNALS -->
+                                <div class="inspector-section">
+                                    <label class="section-label"><i class="fa-solid fa-fingerprint"></i> Extracted Security Indicators</label>
+                                    <div class="triggers-list" id="inspectorTriggersList">
+                                        <!-- Triggers injected dynamically -->
+                                    </div>
+                                </div>
+
+                                <!-- MULTI-MODEL CONSENSUS -->
+                                <div class="inspector-section">
+                                    <label class="section-label"><i class="fa-solid fa-layer-group"></i> Multi-Model Consensus Scorecard</label>
+                                    <div class="consensus-table-wrapper">
+                                        <table class="consensus-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Model</th>
+                                                    <th>Decision</th>
+                                                    <th>Confidence</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="inspectorConsensusBody">
+                                                <!-- Consensus rows injected dynamically -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- BAYES THEOREM & MATH STATS -->
+                                <div class="inspector-section">
+                                    <label class="section-label"><i class="fa-solid fa-square-root-variable"></i> Mathematics & Bayes Decomposition</label>
+                                    <div class="math-stats-card">
+                                        <div class="math-row">
+                                            <span>Prior Log-Odds ($L_0$):</span>
+                                            <strong id="bayesPriorOdds">0.43</strong>
+                                        </div>
+                                        <div class="math-row">
+                                            <span>Evidence Likelihood Ratio ($\Delta L$):</span>
+                                            <strong id="bayesEvidenceScore">+3.82</strong>
+                                        </div>
+                                        <div class="math-row">
+                                            <span>Calibrated Risk ($P(\text{Spam}|X)$):</span>
+                                            <strong id="bayesCalibratedRisk">0.98</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- COMPOSE & LIVE SCANNER MODAL -->
+    <div class="modal-overlay" id="composeModal" style="display: none;">
+        <div class="modal-card compose-modal-card">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fa-solid fa-envelope-open-text text-primary"></i>
+                    <span>Compose & Live ML Threat Scanner</span>
+                </div>
+                <button class="icon-btn-round close-modal-btn" id="closeComposeBtn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="compose-body">
+                <div class="compose-field">
+                    <label>To:</label>
+                    <input type="email" id="composeTo" value="me@workspace.internal" placeholder="Recipient email...">
+                </div>
+                <div class="compose-field">
+                    <label>Subject:</label>
+                    <input type="text" id="composeSubject" placeholder="Email subject...">
+                </div>
+                <div class="compose-templates-bar">
+                    <span>Load Test Preset:</span>
+                    <button class="template-chip" data-template="amazon">Amazon Scam</button>
+                    <button class="template-chip" data-template="telegram">Telegram Task</button>
+                    <button class="template-chip" data-template="hdfc">HDFC Phishing</button>
+                    <button class="template-chip" data-template="legit_tech">Legit Senior SDE</button>
+                    <button class="template-chip" data-template="legit_intern">Legit Intern</button>
+                </div>
+                <div class="compose-field body-field">
+                    <textarea id="composeBody" placeholder="Type or paste any job posting or email text here to scan in real-time..."></textarea>
+                </div>
+
+                <!-- LIVE SCANNER BAR -->
+                <div class="live-scanner-bar" id="liveScannerBar">
+                    <div class="scanner-left">
+                        <span class="scanner-dot" id="scannerDot"></span>
+                        <span class="scanner-status" id="scannerStatus">Real-time ML Scanner Active</span>
+                    </div>
+                    <div class="scanner-center">
+                        <span id="scannerPredictionBadge" class="scanner-badge safe">SAFE (0%)</span>
+                    </div>
+                    <div class="scanner-right">
+                        <span id="scannerLatency">0.8 ms</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelComposeBtn">Cancel</button>
+                <button class="btn btn-primary" id="sendAndClassifyBtn">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    <span>Inject into Inbox & Classify</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ML RESEARCH & BENCHMARK LAB MODAL -->
+    <div class="modal-overlay" id="researchModal" style="display: none;">
+        <div class="modal-card research-modal-card">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fa-solid fa-chart-line text-primary"></i>
+                    <span>ML Research & Benchmark Lab (Cybersecurity Data Analysis)</span>
+                </div>
+                <button class="icon-btn-round close-modal-btn" id="closeResearchBtn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- LAB TABS -->
+            <div class="lab-tabs">
+                <button class="lab-tab active" data-tab="tab-benchmarks">5-Fold CV Model Matrix</button>
+                <button class="lab-tab" data-tab="tab-curves">ROC & PR Curves</button>
+                <button class="lab-tab" data-tab="tab-stats">Statistical Tests (Chi2 & MI)</button>
+                <button class="lab-tab" data-tab="tab-threshold">Decision Threshold Tuning</button>
+                <button class="lab-tab" data-tab="tab-deeplearning">Deep Learning Architecture</button>
+                <button class="lab-tab" data-tab="tab-lifecycle">Lifecycle & Error Analysis</button>
+                <button class="lab-tab" data-tab="tab-hitl"><i class="fa-solid fa-users-gear"></i> Human Feedback & Continuous Learning</button>
+            </div>
+
+            <div class="lab-content">
+                <!-- TAB 1: 5-FOLD CV MODEL MATRIX -->
+                <div class="lab-pane active" id="tab-benchmarks">
+                    <div class="pane-header">
+                        <h3>Model Performance Matrix (Stratified 5-Fold Cross Validation)</h3>
+                        <p>Comprehensive evaluation comparing 8 distinct algorithms across standard cybersecurity classification metrics.</p>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="benchmark-table" id="benchmarkTable">
+                            <thead>
+                                <tr>
+                                    <th>Algorithm</th>
+                                    <th>Accuracy</th>
+                                    <th>Precision</th>
+                                    <th>Recall</th>
+                                    <th>F1-Score</th>
+                                    <th>F2-Score</th>
+                                    <th>ROC-AUC</th>
+                                    <th>PR-AUC</th>
+                                    <th>Brier Loss</th>
+                                    <th>Latency</th>
+                                </tr>
+                            </thead>
+                            <tbody id="benchmarkTableBody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TAB 2: ROC & PR CURVES -->
+                <div class="lab-pane" id="tab-curves">
+                    <div class="pane-header">
+                        <h3>Receiver Operating Characteristic (ROC) & Precision-Recall (PR) Curves</h3>
+                        <p>Visualizing sensitivity, specificity, and precision-recall trade-offs across all 8 models.</p>
+                    </div>
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h4>ROC Curves (True Positive vs False Positive Rate)</h4>
+                            <div class="chart-wrapper">
+                                <canvas id="rocChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h4>Precision-Recall Curves (PR-AUC Evaluation)</h4>
+                            <div class="chart-wrapper">
+                                <canvas id="prChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: STATISTICAL TESTS -->
+                <div class="lab-pane" id="tab-stats">
+                    <div class="pane-header">
+                        <h3>Statistical Hypothesis Testing & Feature Importance</h3>
+                        <p>Chi-Square ($\chi^2$) dependency tests, Mutual Information (MI), and ANOVA F-scores on NLP and Cybersecurity features.</p>
+                    </div>
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h4>Top 15 Chi-Square ($\chi^2$) NLP Token Discriminators</h4>
+                            <div class="chart-wrapper">
+                                <canvas id="chi2Chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h4>ANOVA F-Test Security Signals Significance</h4>
+                            <div class="chart-wrapper">
+                                <canvas id="anovaChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: THRESHOLD TUNING -->
+                <div class="lab-pane" id="tab-threshold">
+                    <div class="pane-header">
+                        <h3>Interactive Decision Threshold ($\tau$) Optimizer</h3>
+                        <p>Adjust the classification threshold to control the False Positive vs False Negative trade-off in Security Operations.</p>
+                    </div>
+                    <div class="threshold-simulator-container">
+                        <div class="slider-box">
+                            <label>Decision Threshold ($\tau$): <span id="thresholdValDisplay">0.50</span></label>
+                            <input type="range" id="thresholdSlider" min="0.05" max="0.95" step="0.05" value="0.50">
+                            <div class="slider-ticks">
+                                <span>0.05 (High Recall / Catches All Threats)</span>
+                                <span>0.50 (Balanced)</span>
+                                <span>0.95 (High Precision / Low False Alarms)</span>
+                            </div>
+                        </div>
+
+                        <div class="threshold-results-grid">
+                            <div class="metric-card">
+                                <h5>Precision</h5>
+                                <div class="metric-val text-primary" id="threshPrecision">98.9%</div>
+                            </div>
+                            <div class="metric-card">
+                                <h5>Recall</h5>
+                                <div class="metric-val text-success" id="threshRecall">98.8%</div>
+                            </div>
+                            <div class="metric-card">
+                                <h5>False Positive Rate</h5>
+                                <div class="metric-val text-danger" id="threshFPR">0.8%</div>
+                            </div>
+                            <div class="metric-card">
+                                <h5>$F_{0.5}$ Score (Precision Favored)</h5>
+                                <div class="metric-val text-info" id="threshF05">98.9%</div>
+                            </div>
+                        </div>
+
+                        <div class="confusion-matrix-box">
+                            <h4>Simulated Confusion Matrix at $\tau$</h4>
+                            <div class="cm-grid">
+                                <div class="cm-cell cm-tn">
+                                    <span>True Negatives (Legit Clean)</span>
+                                    <strong id="cmTN">978</strong>
+                                </div>
+                                <div class="cm-cell cm-fp">
+                                    <span>False Positives (False Alarm)</span>
+                                    <strong id="cmFP">8</strong>
+                                </div>
+                                <div class="cm-cell cm-fn">
+                                    <span>False Negatives (Missed Threat)</span>
+                                    <strong id="cmFN">18</strong>
+                                </div>
+                                <div class="cm-cell cm-tp">
+                                    <span>True Positives (Threat Blocked)</span>
+                                    <strong id="cmTP">1496</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 5: DEEP LEARNING ARCHITECTURE -->
+                <div class="lab-pane" id="tab-deeplearning">
+                    <div class="pane-header">
+                        <h3>Deep Learning Neural Network (MLP / BiLSTM Architecture)</h3>
+                        <p>Multi-Layer Perceptron neural classifier with Adam optimization, ReLU non-linearities, and Early Stopping.</p>
+                    </div>
+                    <div class="dl-architecture-card">
+                        <div class="arch-layer">
+                            <div class="layer-badge">Input Layer</div>
+                            <div class="layer-info">Feature Union Sparse Representation (8,020 Features: Word TF-IDF + Char TF-IDF + 20 Scaled Security Signals)</div>
+                        </div>
+                        <div class="arch-arrow"><i class="fa-solid fa-arrow-down"></i></div>
+                        <div class="arch-layer">
+                            <div class="layer-badge">Dense Hidden Layer 1</div>
+                            <div class="layer-info">128 Neurons | ReLU Activation | Dropout(0.3) | L2 Regularization ($\alpha = 0.0001$)</div>
+                        </div>
+                        <div class="arch-arrow"><i class="fa-solid fa-arrow-down"></i></div>
+                        <div class="arch-layer">
+                            <div class="layer-badge">Dense Hidden Layer 2</div>
+                            <div class="layer-info">64 Neurons | ReLU Activation | Dropout(0.2) | Batch Normalization</div>
+                        </div>
+                        <div class="arch-arrow"><i class="fa-solid fa-arrow-down"></i></div>
+                        <div class="arch-layer">
+                            <div class="layer-badge">Output Layer</div>
+                            <div class="layer-info">Sigmoid Probability $P(\text{Spam} \mid X) \in [0, 1]$ | Binary Cross-Entropy Loss</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 6: LIFECYCLE & ERROR ANALYSIS -->
+                <div class="lab-pane" id="tab-lifecycle">
+                    <div class="pane-header">
+                        <h3>End-to-End ML Lifecycle & Error Analysis</h3>
+                        <p>Examining difficult false positives, false negatives, and architectural mitigation strategies.</p>
+                    </div>
+                    <div class="error-analysis-list">
+                        <div class="error-item">
+                            <div class="error-type false-positive">FALSE POSITIVE CASE STUDY</div>
+                            <div class="error-body">"Casual early-stage startup outreach: 'Hey, love your GitHub repos, we have an open React role in Bangalore, ping me on WhatsApp.'"</div>
+                            <div class="error-fix"><strong>Root Cause:</strong> High penalty triggered by private messaging channel (WhatsApp).<br><strong>Mitigation:</strong> Domain reputation verification + presence of authentic GitHub repository cross-references.</div>
+                        </div>
+                        <div class="error-item">
+                            <div class="error-type false-negative">FALSE NEGATIVE CASE STUDY</div>
+                            <div class="error-body">"Sophisticated brand spoofing with disguised subdomain: 'tcs-careers.org/apply' asking for 500 INR test registration fee embedded in PDF link."</div>
+                            <div class="error-fix"><strong>Root Cause:</strong> Clean corporate phrasing diluted advance fee keyword density.<br><strong>Mitigation:</strong> Subword Character N-Grams (3-5) + Whois domain age feature extraction.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 7: HUMAN FEEDBACK & CONTINUOUS LEARNING -->
+                <div class="lab-pane" id="tab-hitl">
+                    <div class="pane-header">
+                        <h3>Multi-Tenant Human-in-the-Loop Feedback & Safe Continuous Learning</h3>
+                        <p>Real-time telemetry, multi-user anti-poisoning controls, disagreement analysis, and candidate model validation gates.</p>
+                    </div>
+
+                    <!-- Top KPI Summary Cards -->
+                    <div class="hitl-kpi-grid">
+                        <div class="hitl-card">
+                            <div class="hitl-icon text-primary"><i class="fa-solid fa-comments"></i></div>
+                            <div class="hitl-body">
+                                <div class="hitl-val" id="hitlTotalFeedback">0</div>
+                                <div class="hitl-lbl">Total User Feedback</div>
+                            </div>
+                        </div>
+                        <div class="hitl-card">
+                            <div class="hitl-icon text-success"><i class="fa-solid fa-shield-check"></i></div>
+                            <div class="hitl-body">
+                                <div class="hitl-val" id="hitlSafeFeedback">0</div>
+                                <div class="hitl-lbl">Useful / Safe Labels</div>
+                            </div>
+                        </div>
+                        <div class="hitl-card">
+                            <div class="hitl-icon text-danger"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                            <div class="hitl-body">
+                                <div class="hitl-val" id="hitlSpamFeedback">0</div>
+                                <div class="hitl-lbl">Spam / Threat Labels</div>
+                            </div>
+                        </div>
+                        <div class="hitl-card">
+                            <div class="hitl-icon text-muted"><i class="fa-solid fa-circle-question"></i></div>
+                            <div class="hitl-body">
+                                <div class="hitl-val" id="hitlUnsureFeedback">0</div>
+                                <div class="hitl-lbl">Unsure (Analytics Only)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Safety Policy & Quality Controls Banner -->
+                    <div class="safety-policy-box">
+                        <div class="policy-header">
+                            <i class="fa-solid fa-shield-halved text-primary"></i>
+                            <strong>Multi-User Safety & Anti-Poisoning Policy:</strong>
+                        </div>
+                        <div class="policy-grid">
+                            <div class="policy-item">
+                                <i class="fa-solid fa-user-lock text-success"></i>
+                                <span><strong>Single-Tenant Cap:</strong> Max 20% representation per tenant</span>
+                            </div>
+                            <div class="policy-item">
+                                <i class="fa-solid fa-users text-primary"></i>
+                                <span><strong>Diversity Gate:</strong> Min 3 distinct tenants required</span>
+                            </div>
+                            <div class="policy-item">
+                                <i class="fa-solid fa-code-compare text-warning"></i>
+                                <span><strong>Conflict Resolution:</strong> Cross-user disagreements quarantined</span>
+                            </div>
+                            <div class="policy-item">
+                                <i class="fa-solid fa-clock-rotate-left text-info"></i>
+                                <span><strong>Cadence:</strong> 7-day periodic check (Min 500 eligible labels)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Disagreement Matrix & Pipeline Status Grid -->
+                    <div class="hitl-two-col-grid">
+                        <div class="hitl-panel">
+                            <h4><i class="fa-solid fa-scale-balanced text-primary"></i> Model vs User Disagreement Analysis</h4>
+                            <div class="disagreement-stats">
+                                <div class="disagree-row">
+                                    <span>User Agreements (Model & User match)</span>
+                                    <strong class="text-success" id="disagreeAgreements">0</strong>
+                                </div>
+                                <div class="disagree-row">
+                                    <span>User Reported False Positives (Model flagged Spam, User says Safe)</span>
+                                    <strong class="text-warning" id="disagreeFP">0</strong>
+                                </div>
+                                <div class="disagree-row">
+                                    <span>User Reported False Negatives (Model flagged Safe, User caught Threat)</span>
+                                    <strong class="text-danger" id="disagreeFN">0</strong>
+                                </div>
+                                <div class="disagree-row">
+                                    <span>Cross-User Conflicting Samples (Quarantined from Training)</span>
+                                    <strong class="text-muted" id="disagreeConflicts">0</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="hitl-panel">
+                            <h4><i class="fa-solid fa-server text-primary"></i> Active Production & Retraining Status</h4>
+                            <div class="prod-status-info">
+                                <div class="status-row">
+                                    <span>Active Production Model:</span>
+                                    <strong class="text-primary" id="hitlActiveProdModel">Deep Neural Net (MLP v2.0)</strong>
+                                </div>
+                                <div class="status-row">
+                                    <span>Eligible Training Queue:</span>
+                                    <strong id="hitlEligibleQueue">0 / 500 min</strong>
+                                </div>
+                                <div class="status-row">
+                                    <span>Next Scheduled Eligibility Check:</span>
+                                    <span id="hitlNextCheck">Weekly Periodic Batch</span>
+                                </div>
+                                <div class="status-row">
+                                    <span>Validation Gate Criteria:</span>
+                                    <span class="badge badge-clean">Precision &ge; 0.9700 &amp; F2 Retention</span>
+                                </div>
+                            </div>
+                            <div style="margin-top: 14px; text-align: right;">
+                                <button class="btn btn-sm btn-secondary" id="btnTriggerEvalNow" title="Trigger background candidate training & validation gate evaluation">
+                                    <i class="fa-solid fa-play"></i> <span>Trigger Candidate Evaluation (Force)</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Model Versions Registry Table & Rollback -->
+                    <div class="model-versions-section">
+                        <h4><i class="fa-solid fa-code-branch text-primary"></i> Versioned Model Registry & Instant Rollback</h4>
+                        <div class="table-responsive">
+                            <table class="benchmark-table" id="modelVersionsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Version ID</th>
+                                        <th>Algorithm</th>
+                                        <th>Status</th>
+                                        <th>Dataset Version</th>
+                                        <th>Val Precision</th>
+                                        <th>Val F1-Score</th>
+                                        <th>Val F2-Score</th>
+                                        <th>Created At</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="modelVersionsTableBody">
+                                    <tr>
+                                        <td><strong>v2.0.0-frozen</strong></td>
+                                        <td>Deep Neural Net (MLP)</td>
+                                        <td><span class="threat-tag safe">PRODUCTION</span></td>
+                                        <td>master_v2.0</td>
+                                        <td>97.78%</td>
+                                        <td>98.47%</td>
+                                        <td>98.89%</td>
+                                        <td>2026-09-17</td>
+                                        <td><span class="text-muted">Active</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONNECT REAL GMAIL MODAL -->
+    <div class="modal-overlay" id="gmailModal" style="display: none;">
+        <div class="modal-card gmail-modal-card">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fa-brands fa-google text-primary"></i>
+                    <span>Connect Your Actual Gmail Account</span>
+                </div>
+                <button class="icon-btn-round close-modal-btn" id="closeGmailModalBtn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="gmail-modal-body">
+                <!-- Status Bar -->
+                <div class="gmail-status-banner" id="gmailConnectionStatusBanner">
+                    <div class="status-icon"><i class="fa-solid fa-link-slash"></i></div>
+                    <div class="status-text">
+                        <strong id="gmailStatusTitle">Not Connected</strong>
+                        <span id="gmailStatusSubtitle">Connect via Google App Password for live ML threat filtering on your real inbox.</span>
+                    </div>
+                </div>
+
+                <div class="gmail-form" id="gmailForm">
+                    <div class="form-group">
+                        <label for="gmailEmailInput"><i class="fa-regular fa-envelope"></i> Your Gmail Address:</label>
+                        <input type="email" id="gmailEmailInput" placeholder="e.g. yourname@gmail.com" autocomplete="email">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gmailPasswordInput"><i class="fa-solid fa-key"></i> 16-Character Google App Password:</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" id="gmailPasswordInput" placeholder="xxxx xxxx xxxx xxxx" autocomplete="current-password">
+                            <button type="button" class="icon-btn-sm toggle-pwd-btn" id="togglePwdBtn" title="Toggle visibility">
+                                <i class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gmailLimitSelect"><i class="fa-solid fa-list-ol"></i> Max Emails to Fetch &amp; Classify:</label>
+                        <select id="gmailLimitSelect" class="form-select">
+                            <option value="15">Latest 15 Emails</option>
+                            <option value="25" selected>Latest 25 Emails (Recommended)</option>
+                            <option value="50">Latest 50 Emails</option>
+                        </select>
+                    </div>
+
+                    <!-- Step-by-Step Instructions Guide -->
+                    <div class="instructions-accordion">
+                        <div class="instructions-header" id="toggleInstructionsBtn">
+                            <span><i class="fa-solid fa-circle-question"></i> How to generate a Google App Password (30 seconds)</span>
+                            <i class="fa-solid fa-chevron-down" id="instrChevron"></i>
+                        </div>
+                        <div class="instructions-content" id="instructionsContent" style="display: none;">
+                            <ol class="step-list">
+                                <li>Make sure <strong>2-Step Verification</strong> is ON in your Google Account.</li>
+                                <li>Open <a href="https://myaccount.google.com/apppasswords" target="_blank" class="link-btn">Google App Passwords <i class="fa-solid fa-arrow-up-right-from-square"></i></a>.</li>
+                                <li>Enter an app name (e.g. <code>CareerShield ML</code>) and click <strong>Create</strong>.</li>
+                                <li>Copy the generated <strong>16-character passkey</strong> and paste it above!</li>
+                            </ol>
+                            <p class="security-note"><i class="fa-solid fa-shield-halved"></i> <strong>Privacy Note:</strong> Your credentials connect directly via local IMAP SSL (`imap.gmail.com:993`) on your computer. Nothing is ever sent to external cloud servers.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Disconnect Section (visible when connected) -->
+                <div class="connected-details" id="connectedDetails" style="display: none;">
+                    <div class="connected-account-box">
+                        <div class="acc-avatar" id="connectedAvatar">G</div>
+                        <div class="acc-info">
+                            <strong id="connectedEmailDisplay">user@gmail.com</strong>
+                            <span>Connected via IMAP SSL • Ready for live ML threat scoring</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary w-100" id="syncNowBtn">
+                        <i class="fa-solid fa-rotate"></i>
+                        <span>Fetch &amp; Re-Scan Live Emails Now</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelGmailModalBtn">Close</button>
+                <button class="btn btn-danger-soft" id="disconnectGmailBtn" style="display: none;">
+                    <i class="fa-solid fa-link-slash"></i>
+                    <span>Disconnect</span>
+                </button>
+                <button class="btn btn-primary" id="connectGmailBtn">
+                    <i class="fa-solid fa-plug"></i>
+                    <span>Connect &amp; Sync Real Mail</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="/js/app.js"></script>
+</body>
+</html>

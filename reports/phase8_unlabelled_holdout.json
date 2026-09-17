@@ -1,0 +1,19 @@
+{
+  "total_unlabelled_records": 4899,
+  "predicted_threat_count": 157,
+  "predicted_threat_percentage": 3.2,
+  "predicted_safe_count": 4742,
+  "predicted_safe_percentage": 96.8,
+  "confidence_distribution": {
+    "high_confidence_threats_p_ge_085": 131,
+    "high_confidence_safe_p_le_015": 4701,
+    "uncertain_borderline_040_to_060": 13
+  },
+  "probability_percentiles": {
+    "p10": 0.0,
+    "p25": 0.0,
+    "p50_median": 0.0,
+    "p75": 0.0,
+    "p90": 0.0011
+  }
+}

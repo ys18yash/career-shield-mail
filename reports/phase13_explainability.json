@@ -1,0 +1,251 @@
+{
+  "verified_components": {
+    "calibrated_posterior_risk": true,
+    "threat_classification_level": true,
+    "security_heuristic_triggers": true,
+    "token_attribution_heatmap": true,
+    "bayes_log_odds_decomposition": true,
+    "multi_model_consensus": true
+  },
+  "sample_explanation_output": {
+    "label": "Spam / Phishing Scam",
+    "is_spam": true,
+    "risk_score": 0.9028,
+    "threat_level": "CRITICAL THREAT",
+    "threat_color": "red",
+    "model_used": "Stacking Ensemble",
+    "security_triggers": [
+      {
+        "category": "Micro-Fee / ID Card Scam Trap",
+        "severity": "CRITICAL",
+        "detail": "Requests access fee, Digital ID card issuance fee, or platform maintenance charge under deceptive 'no internship fee' framing."
+      },
+      {
+        "category": "Financial Advance Fee / Charge",
+        "severity": "CRITICAL",
+        "detail": "Mentions registration fee, access charge, deposit, payment, UPI, or cash transaction."
+      }
+    ],
+    "token_attributions": [
+      {
+        "token": "SkillInfyTech",
+        "weight": 0.0,
+        "type": "neutral"
+      },
+      {
+        "token": "4",
+        "weight": -1.145,
+        "type": "safe"
+      },
+      {
+        "token": "-",
+        "weight": 0.0,
+        "type": "neutral"
+      },
+      {
+        "token": "Weeks",
+        "weight": 0.481,
+        "type": "risk"
+      },
+      {
+        "token": "Internship",
+        "weight": -0.728,
+        "type": "safe"
+      },
+      {
+        "token": "Program",
+        "weight": 0.973,
+        "type": "risk"
+      },
+      {
+        "token": ".",
+        "weight": 0.0,
+        "type": "neutral"
+      },
+      {
+        "token": "No",
+        "weight": 2.184,
+        "type": "risk"
+      },
+      {
+        "token": "internship",
+        "weight": -0.728,
+        "type": "safe"
+      },
+      {
+        "token": "fee",
+        "weight": 1.984,
+        "type": "risk"
+      },
+      {
+        "token": ".",
+        "weight": 0.0,
+        "type": "neutral"
+      },
+      {
+        "token": "Access",
+        "weight": 1.8,
+        "type": "risk"
+      },
+      {
+        "token": "Fee",
+        "weight": 1.984,
+        "type": "risk"
+      },
+      {
+        "token": ":",
+        "weight": 0.0,
+        "type": "neutral"
+      },
+      {
+        "token": "\u20b9",
+        "weight": 1.8,
+        "type": "risk"
+      },
+      {
+        "token": "89",
+        "weight": 1.8,
+        "type": "risk"
+      },
+      {
+        "token": "only",
+        "weight": 0.753,
+        "type": "risk"
+      },
+      {
+        "token": "for",
+        "weight": -0.021,
+        "type": "neutral"
+      },
+      {
+        "token": "Digital",
+        "weight": 1.8,
+        "type": "risk"
+      },
+      {
+        "token": "ID",
+        "weight": 1.8,
+        "type": "risk"
+      },
+      {
+        "token": "Card",
+        "weight": 0.78,
+        "type": "risk"
+      },
+      {
+        "token": "&",
+        "weight": 0.0,
+        "type": "neutral"
+      },
+      {
+        "token": "platform",
+        "weight": -1.14,
+        "type": "safe"
+      },
+      {
+        "token": "access",
+        "weight": 1.8,
+        "type": "risk"
+      },
+      {
+        "token": ".",
+        "weight": 0.0,
+        "type": "neutral"
+      },
+      {
+        "token": "Payment",
+        "weight": 2.1,
+        "type": "risk"
+      },
+      {
+        "token": "via",
+        "weight": -0.915,
+        "type": "safe"
+      },
+      {
+        "token": "UPI",
+        "weight": 1.8,
+        "type": "risk"
+      },
+      {
+        "token": "or",
+        "weight": -2.136,
+        "type": "safe"
+      },
+      {
+        "token": "GPay",
+        "weight": 1.8,
+        "type": "risk"
+      },
+      {
+        "token": "to",
+        "weight": -1.295,
+        "type": "safe"
+      },
+      {
+        "token": "verify",
+        "weight": 1.359,
+        "type": "risk"
+      },
+      {
+        "token": "slot",
+        "weight": 0.0,
+        "type": "neutral"
+      },
+      {
+        "token": ".",
+        "weight": 0.0,
+        "type": "neutral"
+      }
+    ],
+    "bayes_statistics": {
+      "prior_spam_probability": 0.6044,
+      "prior_log_odds": 0.4238,
+      "evidence_log_likelihood_ratio": 1.8051,
+      "calibrated_posterior_risk": 0.9028,
+      "model_used": "Stacking Ensemble"
+    },
+    "model_consensus": {
+      "Naive Bayes": {
+        "risk_score": 0.9972,
+        "classification": "Spam"
+      },
+      "Logistic Regression": {
+        "risk_score": 0.9982,
+        "classification": "Spam"
+      },
+      "Support Vector Machine": {
+        "risk_score": 0.9997,
+        "classification": "Spam"
+      },
+      "Random Forest": {
+        "risk_score": 0.7701,
+        "classification": "Spam"
+      },
+      "Extra Trees Ensemble": {
+        "risk_score": 0.7365,
+        "classification": "Spam"
+      },
+      "XGBoost": {
+        "risk_score": 0.9345,
+        "classification": "Spam"
+      },
+      "Deep Neural Net (MLP)": {
+        "risk_score": 1.0,
+        "classification": "Spam"
+      },
+      "Stacking Ensemble": {
+        "risk_score": 0.9028,
+        "classification": "Spam"
+      }
+    },
+    "linguistic_metrics": {
+      "char_length": 165,
+      "word_count": 27,
+      "uppercase_ratio": 0.115,
+      "type_token_ratio": 0.963,
+      "financial_trigger_count": 7,
+      "urgency_trigger_count": 0
+    }
+  }
+}

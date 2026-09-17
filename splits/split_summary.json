@@ -1,0 +1,77 @@
+{
+  "total_master_records": 111510,
+  "total_labeled_records": 106611,
+  "total_unlabelled_records": 4899,
+  "splits": {
+    "train": {
+      "samples": 74627,
+      "threat_count": 35275,
+      "safe_count": 39352,
+      "threat_percentage": 47.27,
+      "sources": {
+        "phishing_email": 57673,
+        "fake_job_emscad": 7715,
+        "spam_promotional": 6999,
+        "indian_job_scam": 2240
+      },
+      "label_names": {
+        "phishing": 31432,
+        "legitimate": 27711,
+        "real": 8251,
+        "safe": 3390,
+        "fake": 1704,
+        "prompt_attack": 1234,
+        "spam": 698,
+        "suspicious": 207
+      }
+    },
+    "validation": {
+      "samples": 15992,
+      "threat_count": 7558,
+      "safe_count": 8434,
+      "threat_percentage": 47.26,
+      "sources": {
+        "phishing_email": 12359,
+        "fake_job_emscad": 1654,
+        "spam_promotional": 1499,
+        "indian_job_scam": 480
+      },
+      "label_names": {
+        "phishing": 6735,
+        "legitimate": 5939,
+        "real": 1769,
+        "safe": 726,
+        "fake": 365,
+        "prompt_attack": 264,
+        "spam": 150,
+        "suspicious": 44
+      }
+    },
+    "test": {
+      "samples": 15992,
+      "threat_count": 7559,
+      "safe_count": 8433,
+      "threat_percentage": 47.27,
+      "sources": {
+        "phishing_email": 12359,
+        "fake_job_emscad": 1653,
+        "spam_promotional": 1500,
+        "indian_job_scam": 480
+      },
+      "label_names": {
+        "phishing": 6736,
+        "legitimate": 5938,
+        "real": 1768,
+        "safe": 727,
+        "fake": 365,
+        "prompt_attack": 265,
+        "spam": 149,
+        "suspicious": 44
+      }
+    },
+    "unlabelled_holdout": {
+      "samples": 4899,
+      "source": "fake_job_emscad"
+    }
+  }
+}

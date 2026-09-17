@@ -1,0 +1,35 @@
+{
+  "Soft_Voting_Ensemble": {
+    "type": "VotingClassifier(voting='soft')",
+    "train_time_sec": 299.91,
+    "val_f1": 0.9819,
+    "val_f2": 0.9818,
+    "val_roc_auc": 0.9974,
+    "val_pr_auc": 0.9974,
+    "test_f1": 0.9818,
+    "test_f2": 0.9816,
+    "test_roc_auc": 0.9976,
+    "test_pr_auc": 0.9977,
+    "test_brier": 0.021
+  },
+  "True_Stacking_Classifier": {
+    "type": "StackingClassifier(final_estimator=LogisticRegression(), cv=3)",
+    "train_time_sec": 893.28,
+    "val_f1": 0.9827,
+    "val_f2": 0.982,
+    "val_roc_auc": 0.9976,
+    "val_pr_auc": 0.9976,
+    "test_f1": 0.9849,
+    "test_f2": 0.985,
+    "test_roc_auc": 0.9981,
+    "test_pr_auc": 0.9982,
+    "test_brier": 0.0116
+  },
+  "Best_Single_Model_MLP": {
+    "type": "Deep Neural Net (MLP 128x64)",
+    "val_f1": 0.985,
+    "val_f2": 0.9839,
+    "val_roc_auc": 0.9986,
+    "val_pr_auc": 0.9986
+  }
+}

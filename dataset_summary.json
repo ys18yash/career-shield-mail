@@ -1,0 +1,48 @@
+{
+  "total_records": 111510,
+  "labeled_records": 106611,
+  "threat_records": 50392,
+  "safe_records": 56219,
+  "unlabelled_holdout_records": 4899,
+  "threat_percentage": 47.27,
+  "safe_percentage": 52.73,
+  "sources": {
+    "indian_job_scam": {
+      "total": 6400,
+      "threat": 3200,
+      "safe": 3200
+    },
+    "fake_job_emscad": {
+      "total": 16192,
+      "threat": 786,
+      "safe": 15406
+    },
+    "phishing_email": {
+      "total": 82486,
+      "threat": 45874,
+      "safe": 36612
+    },
+    "spam_promotional": {
+      "total": 6432,
+      "threat": 532,
+      "safe": 1001,
+      "unlabelled": 4899
+    }
+  },
+  "splits": {
+    "train": 74627,
+    "validation": 15992,
+    "test": 15992,
+    "unlabelled_holdout": 4899
+  },
+  "columns": [
+    "id",
+    "text",
+    "label",
+    "label_name",
+    "original_label",
+    "source",
+    "sub_source",
+    "metadata"
+  ]
+}

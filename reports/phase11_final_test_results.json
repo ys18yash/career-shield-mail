@@ -1,0 +1,45 @@
+{
+  "selected_production_model": "Deep Neural Net (MLP)",
+  "model_hyperparameters": {
+    "alpha": 0.001,
+    "hidden_layer_sizes": [
+      128,
+      64
+    ],
+    "learning_rate_init": 0.001
+  },
+  "frozen_decision_threshold": 0.05,
+  "threshold_selection_method": "Empirical grid search on Validation Split (splits/validation.parquet) maximizing F2 with Precision >= 0.9700",
+  "standard_threshold_050_metrics": {
+    "accuracy": 0.9869,
+    "precision": 0.9879,
+    "recall": 0.9843,
+    "f1_score": 0.9861,
+    "f2_score": 0.985,
+    "roc_auc": 0.9986,
+    "pr_auc": 0.9986,
+    "brier_score": 0.0111,
+    "confusion_matrix": {
+      "tn": 8342,
+      "fp": 91,
+      "fn": 119,
+      "tp": 7440
+    }
+  },
+  "optimal_threshold_tau_star_metrics": {
+    "threshold": 0.05,
+    "accuracy": 0.9854,
+    "precision": 0.9778,
+    "recall": 0.9917,
+    "f1_score": 0.9847,
+    "f2_score": 0.9889,
+    "roc_auc": 0.9986,
+    "pr_auc": 0.9986,
+    "confusion_matrix": {
+      "tn": 8263,
+      "fp": 170,
+      "fn": 63,
+      "tp": 7496
+    }
+  }
+}

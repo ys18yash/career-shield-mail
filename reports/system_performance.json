@@ -1,0 +1,17 @@
+{
+  "model_loading_ms": 9479.53,
+  "memory_rss_mb": 829.38,
+  "feature_extraction_ms": 3.72,
+  "model_latencies_ms": {
+    "Naive Bayes": 72.121,
+    "Logistic Regression": 68.551,
+    "Support Vector Machine": 73.525,
+    "Random Forest": 90.781,
+    "Extra Trees Ensemble": 93.404,
+    "XGBoost": 94.776,
+    "Deep Neural Net (MLP)": 104.981,
+    "Stacking Ensemble": 138.901
+  },
+  "fastapi_roundtrip_ms": 351.415,
+  "throughput_emails_per_sec": 2.8
+}

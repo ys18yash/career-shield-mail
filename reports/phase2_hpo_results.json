@@ -1,0 +1,150 @@
+{
+  "cv_strategy": "StratifiedKFold(n_splits=3, shuffle=True, random_state=42)",
+  "optimization_metric": "F2 Score (Beta=2)",
+  "training_samples_used": 74627,
+  "models": {
+    "Logistic Regression": {
+      "search_space": {
+        "C": [
+          0.5,
+          1.0,
+          2.0,
+          5.0
+        ],
+        "class_weight": [
+          "balanced",
+          null
+        ],
+        "solver": [
+          "lbfgs"
+        ]
+      },
+      "total_configurations": 8,
+      "best_parameters": {
+        "C": 5.0,
+        "class_weight": "balanced",
+        "solver": "lbfgs"
+      },
+      "best_cv_f2_score": 0.9806,
+      "fit_time_seconds": 533.82,
+      "validation_metrics": {
+        "accuracy": 0.9833,
+        "precision": 0.9836,
+        "recall": 0.9811,
+        "f1_score": 0.9823,
+        "f2_score": 0.9816,
+        "roc_auc": 0.9983,
+        "pr_auc": 0.9981,
+        "brier_score": 0.0136
+      }
+    },
+    "Support Vector Machine": {
+      "search_space": {
+        "C": [
+          0.1,
+          0.5,
+          1.0,
+          2.0
+        ]
+      },
+      "total_configurations": 4,
+      "best_parameters": {
+        "C": 1.0
+      },
+      "best_cv_f2_score": 0.9812,
+      "fit_time_seconds": 225.86,
+      "validation_metrics": {
+        "accuracy": 0.9841,
+        "precision": 0.9844,
+        "recall": 0.982,
+        "f1_score": 0.9832,
+        "f2_score": 0.9825,
+        "roc_auc": 0.9983,
+        "pr_auc": 0.9981,
+        "brier_score": 0.0128
+      }
+    },
+    "XGBoost": {
+      "search_space": {
+        "n_estimators": [
+          30,
+          50
+        ],
+        "max_depth": [
+          4,
+          6
+        ],
+        "learning_rate": [
+          0.1,
+          0.2
+        ],
+        "colsample_bytree": [
+          0.2,
+          0.4
+        ]
+      },
+      "total_configurations": 16,
+      "best_parameters": {
+        "colsample_bytree": 0.4,
+        "learning_rate": 0.2,
+        "max_depth": 6,
+        "n_estimators": 50
+      },
+      "best_cv_f2_score": 0.9658,
+      "fit_time_seconds": 6393.76,
+      "validation_metrics": {
+        "accuracy": 0.9655,
+        "precision": 0.96,
+        "recall": 0.9673,
+        "f1_score": 0.9636,
+        "f2_score": 0.9658,
+        "roc_auc": 0.9942,
+        "pr_auc": 0.9938,
+        "brier_score": 0.0285
+      }
+    },
+    "Deep Neural Net (MLP)": {
+      "search_space": {
+        "hidden_layer_sizes": [
+          [
+            128,
+            64
+          ],
+          [
+            64,
+            32
+          ]
+        ],
+        "alpha": [
+          0.0001,
+          0.001
+        ],
+        "learning_rate_init": [
+          0.001,
+          0.0005
+        ]
+      },
+      "total_configurations": 8,
+      "best_parameters": {
+        "alpha": 0.001,
+        "hidden_layer_sizes": [
+          128,
+          64
+        ],
+        "learning_rate_init": 0.001
+      },
+      "best_cv_f2_score": 0.9818,
+      "fit_time_seconds": 12021.86,
+      "validation_metrics": {
+        "accuracy": 0.9858,
+        "precision": 0.9867,
+        "recall": 0.9832,
+        "f1_score": 0.985,
+        "f2_score": 0.9839,
+        "roc_auc": 0.9986,
+        "pr_auc": 0.9986,
+        "brier_score": 0.0122
+      }
+    }
+  }
+}

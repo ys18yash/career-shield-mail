@@ -1,0 +1,37 @@
+{
+  "per_source_evaluation": {
+    "phishing_email": {
+      "test_sample_count": 12359,
+      "threat_ratio": 0.5195,
+      "accuracy": 0.5029,
+      "precision": 0.5237,
+      "recall": 0.4759,
+      "f1_score": 0.4987
+    },
+    "spam_promotional": {
+      "test_sample_count": 1500,
+      "threat_ratio": 0.5153,
+      "accuracy": 0.5,
+      "precision": 0.5163,
+      "recall": 0.4709,
+      "f1_score": 0.4926
+    },
+    "indian_job_scam": {
+      "test_sample_count": 480,
+      "threat_ratio": 0.6042,
+      "accuracy": 0.4917,
+      "precision": 0.6075,
+      "recall": 0.4483,
+      "f1_score": 0.5159
+    },
+    "fake_job_emscad": {
+      "test_sample_count": 1653,
+      "threat_ratio": 0.0454,
+      "accuracy": 0.5378,
+      "precision": 0.0566,
+      "recall": 0.5867,
+      "f1_score": 0.1033
+    }
+  },
+  "cross_domain_evaluation": {}
+}
