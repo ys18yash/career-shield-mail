@@ -1,4 +1,3 @@
-# Simulated Email Feed for the Gmail Cyber Filter Client
 
 SIMULATED_EMAILS = [
     {

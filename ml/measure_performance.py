@@ -18,7 +18,6 @@ def measure_system_performance():
     process = psutil.Process(os.getpid())
     mem_before = process.memory_info().rss / (1024 * 1024)
 
-    # 1. Measure Explainer / Model Loading Time
     t0_load = time.time()
     explainer = ModelExplainer()
     load_time_sec = time.time() - t0_load
@@ -33,14 +32,12 @@ def measure_system_performance():
         "Payment via UPI or GPay to verify your candidate slot."
     )
 
-    # 2. Measure Feature Extraction Latency
     t0_feat = time.time()
     for _ in range(100):
         _ = explainer.transform_text(sample_email)
     feat_time_ms = ((time.time() - t0_feat) / 100.0) * 1000.0
     print(f"  -> Average Feature Extraction Latency   : {feat_time_ms:.3f} ms / email")
 
-    # 3. Measure Inference Latency Per Model
     models = [
         "Naive Bayes", "Logistic Regression", "Support Vector Machine",
         "Random Forest", "Extra Trees Ensemble", "XGBoost",
@@ -57,7 +54,6 @@ def measure_system_performance():
         latency_results[m] = round(lat_ms, 3)
         print(f"  {m:<26} : {lat_ms:6.3f} ms / email")
 
-    # 4. Measure FastAPI Roundtrip Latency
     client = TestClient(app)
     t0_api = time.time()
     for _ in range(50):

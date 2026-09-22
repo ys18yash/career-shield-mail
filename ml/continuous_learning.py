@@ -23,7 +23,6 @@ from ml.preprocess import clean_text_for_nlp
 from ml.feedback_store import feedback_store, DB_PATH
 from ml.feedback_quality import FeedbackQualityEngine
 
-# Directory paths
 CANDIDATE_DATASETS_DIR = "data/candidate_datasets"
 CANDIDATE_MODELS_DIR = "models/candidates"
 os.makedirs(CANDIDATE_DATASETS_DIR, exist_ok=True)
@@ -53,14 +52,12 @@ class ContinuousLearningEngine:
                 "label": int(s["label"])
             } for s in curated_feedback_samples])
             
-            # Combine base with new eligible feedback
             candidate_df = pd.concat([base_train_df, fb_df], ignore_index=True)
         else:
             candidate_df = base_train_df.copy()
 
         candidate_df.to_parquet(snapshot_path, index=False)
 
-        # Mark snapshotted feedback records in database
         if curated_feedback_samples:
             fb_ids = [s["feedback_id"] for s in curated_feedback_samples if "feedback_id" in s]
             if fb_ids:
@@ -93,7 +90,6 @@ class ContinuousLearningEngine:
         X_val_raw = val_df["text"].tolist()
         y_val = val_df["label"].astype(int).values
 
-        # Build feature pipeline (10k Word + 4k Char + 22 Cyber Heuristics)
         word_vec, char_vec, sec_extractor = build_feature_pipeline()
 
         cleaned_train = [clean_text_for_nlp(t) for t in X_train_raw]
@@ -111,7 +107,6 @@ class ContinuousLearningEngine:
         X_train_combined = sparse.hstack([X_word_train, X_char_train, X_sec_train]).tocsr()
         X_val_combined = sparse.hstack([X_word_val, X_char_val, X_sec_val]).tocsr()
 
-        # Train Candidate MLP Neural Network
         clf = MLPClassifier(
             hidden_layer_sizes=(128, 64),
             activation='relu',
@@ -124,7 +119,6 @@ class ContinuousLearningEngine:
         )
         clf.fit(X_train_combined, y_train)
 
-        # Evaluate on validation split at optimal threshold tau*=0.05
         val_probs = clf.predict_proba(X_val_combined)[:, 1]
         threshold = 0.050
         val_preds = (val_probs >= threshold).astype(int)
@@ -140,7 +134,6 @@ class ContinuousLearningEngine:
             "brier_score": round(float(brier_score_loss(y_val, val_probs)), 4)
         }
 
-        # Serialize candidate bundle
         artifact_path = os.path.join(CANDIDATE_MODELS_DIR, f"{version_id}.joblib")
         bundle = {
             "version_id": version_id,
@@ -155,7 +148,6 @@ class ContinuousLearningEngine:
         }
         joblib.dump(bundle, artifact_path, compress=3)
 
-        # Register in database registry as candidate
         feedback_store.register_candidate_model(
             version_id=version_id,
             model_name="Deep Neural Net (MLP)",
@@ -184,20 +176,16 @@ class ContinuousLearningEngine:
         cand_auc = candidate_metrics.get("roc_auc", 0.0)
         cand_brier = candidate_metrics.get("brier_score", 1.0)
 
-        # Gate 1: Precision Gate
         if cand_prec < 0.9700:
             gate_failures.append(f"Precision Gate Failed: {cand_prec:.4f} < 0.9700 target (Risk of excessive false positives)")
 
-        # Gate 2: F2 / Recall Retention Gate
         base_f2 = (baseline_production_metrics or {}).get("f2_score", 0.9880)
         if cand_f2 < (base_f2 - 0.0050):
             gate_failures.append(f"F2-Score Regression Gate Failed: {cand_f2:.4f} < {base_f2 - 0.0050:.4f} baseline threshold")
 
-        # Gate 3: ROC-AUC Discrimination Gate
         if cand_auc < 0.9950:
             gate_failures.append(f"ROC-AUC Gate Failed: {cand_auc:.4f} < 0.9950")
 
-        # Gate 4: Calibration Brier Score Gate
         if cand_brier > 0.0200:
             gate_failures.append(f"Calibration Brier Score Gate Failed: {cand_brier:.4f} > 0.0200")
 
@@ -217,7 +205,6 @@ class ContinuousLearningEngine:
         run_id = f"cl-run-{int(time.time())}"
         started_at = datetime.utcnow().isoformat()
         
-        # 1. Eligibility Check
         eligibility = FeedbackQualityEngine.assess_global_eligibility(DB_PATH)
         if not eligibility["eligible_for_retraining"] and not force:
             return {
@@ -227,21 +214,16 @@ class ContinuousLearningEngine:
                 "eligibility_details": eligibility
             }
 
-        # 2. Extract Capped Multi-Tenant Samples
         curated_samples = FeedbackQualityEngine.extract_capped_candidate_samples(DB_PATH, max_total_samples=max_feedback_samples)
 
-        # 3. Create Immutable Snapshot
         dataset_version, snapshot_path, total_rows = cls.create_candidate_dataset_snapshot(curated_samples)
 
-        # 4. Train Candidate Model
         candidate_version_id, candidate_metrics, artifact_path = cls.train_candidate_model(snapshot_path, dataset_version)
 
-        # 5. Validation Gate Evaluation
         active_prod = feedback_store.get_active_production_model()
         baseline_metrics = active_prod.get("metrics", {})
         passed_gate, failure_reasons = cls.evaluate_validation_gate(candidate_metrics, baseline_metrics)
 
-        # 6. Promotion or Rejection
         if passed_gate:
             feedback_store.promote_candidate_model(candidate_version_id)
             action_result = "PROMOTED_TO_PRODUCTION"
@@ -268,7 +250,6 @@ class ContinuousLearningEngine:
             "active_production_version": candidate_version_id if passed_gate else active_prod.get("version_id")
         }
 
-        # Log run in database
         with sqlite3.connect(DB_PATH) as conn:
             cursor = conn.cursor()
             cursor.execute('''

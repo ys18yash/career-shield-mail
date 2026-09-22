@@ -29,7 +29,6 @@ app = FastAPI(
     version="2.0.0"
 )
 
-# CORS configuration
 origins_env = os.environ.get("CORS_ORIGINS", "*")
 allowed_origins = [o.strip() for o in origins_env.split(",") if o.strip()]
 
@@ -58,7 +57,6 @@ class RollbackRequest(BaseModel):
 class TriggerRetrainRequest(BaseModel):
     force: Optional[bool] = Field(False, description="Force retraining cycle even if volume threshold not met")
 
-# Global Explainer & GmailClient instances
 explainer: Optional[ModelExplainer] = None
 active_gmail_client: Optional[GmailClient] = None
 active_gmail_email: Optional[str] = None
@@ -79,7 +77,6 @@ def get_explainer() -> ModelExplainer:
     return explainer
 
 
-# Request & Response Models
 class PredictRequest(BaseModel):
     text: str = Field(..., max_length=50000, description="Email subject and body text to inspect")
     model: Optional[str] = Field("Stacking Ensemble", description="ML model family to invoke")
@@ -98,9 +95,6 @@ class GmailConnectRequest(BaseModel):
     limit: Optional[int] = Field(20, ge=1, le=100)
 
 
-# ========================================================
-# HEALTH & READINESS ENDPOINTS
-# ========================================================
 @app.get("/api/health")
 def health_check():
     """Liveness probe: verifies the API worker is running."""
@@ -125,9 +119,6 @@ def readiness_check():
     }
 
 
-# ========================================================
-# MODEL METADATA & BENCHMARK ENDPOINTS
-# ========================================================
 @app.get("/api/models")
 def get_models():
     """Returns all available models and their benchmark performance summary."""
@@ -172,9 +163,6 @@ def get_stats():
         raise HTTPException(status_code=500, detail="Failed to load statistical indicators.")
 
 
-# ========================================================
-# CORE ML PREDICTION & THREAT INSPECTION
-# ========================================================
 @app.post("/api/predict")
 def predict_email(req: PredictRequest):
     """Performs real-time ML inference, cyber threat scoring, token attribution, and Bayes decomposition."""
@@ -189,7 +177,6 @@ def predict_email(req: PredictRequest):
         result["latency_ms"] = round((time.time() - t0) * 1000.0, 2)
         result["extracted_urls"] = extract_safe_urls(req.text)
 
-        # Log scan event asynchronously to SQLite store
         scan_id = f"scan-{int(time.time() * 1000)}"
         storage.log_scan(
             scan_id=scan_id,
@@ -208,9 +195,6 @@ def predict_email(req: PredictRequest):
         raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
 
 
-# ========================================================
-# FEED & SIMULATION ENDPOINTS
-# ========================================================
 @app.get("/api/feed")
 def get_feed(model: Optional[str] = "Stacking Ensemble"):
     """Returns the Gmail inbox feed with live ML classifications attached."""
@@ -329,9 +313,6 @@ def simulate_threshold(req: ThresholdRequest):
         raise HTTPException(status_code=500, detail="Error evaluating threshold metrics.")
 
 
-# ========================================================
-# GMAIL IMAP CONNECTION & SYNC ENDPOINTS
-# ========================================================
 @app.post("/api/gmail/connect")
 def connect_gmail(req: GmailConnectRequest):
     """Authenticates with Gmail account via IMAP SSL or Mock Test Mode."""
@@ -424,9 +405,6 @@ def disconnect_gmail():
     return {"status": "disconnected", "message": "Gmail account disconnected successfully."}
 
 
-# ========================================================
-# MULTI-TENANT HUMAN-IN-THE-LOOP FEEDBACK ENDPOINTS
-# ========================================================
 @app.post("/api/feedback")
 def submit_feedback(req: FeedbackRequest, request: Request):
     """
@@ -436,7 +414,6 @@ def submit_feedback(req: FeedbackRequest, request: Request):
     """
     user_id = req.user_id or active_gmail_email or request.headers.get("X-User-ID") or request.client.host or "tenant_default"
     
-    # 1. Rate Limiting / Abuse Protection
     if not FeedbackQualityEngine.check_rate_limit(user_id):
         raise HTTPException(status_code=429, detail="Feedback submission rate limit exceeded. Please wait before submitting more feedback.")
     
@@ -568,7 +545,6 @@ def rollback_model_version(req: RollbackRequest):
         raise HTTPException(status_code=500, detail=f"Rollback failed: {str(e)}")
 
 
-# Mount Static directory
 if os.path.exists("static"):
     app.mount("/", StaticFiles(directory="static", html=True), name="static")
 

@@ -22,7 +22,6 @@ def test_personal_feedback_submission_and_updates():
     user_alpha = f"test_user_alpha_{ts}@corp.local"
     unique_text = f"Offer letter for Software Engineer at Zeta Tech #{ts}. Total package 18 LPA."
     
-    # 1. Submit SAFE
     payload = {
         "text": unique_text,
         "label": "SAFE",
@@ -39,7 +38,6 @@ def test_personal_feedback_submission_and_updates():
     assert data["data"]["action"] == "created"
     assert data["data"]["is_eligible"] == True
 
-    # 2. Update to SPAM (idempotency & conflict tracking)
     payload["label"] = "SPAM"
     res2 = client.post("/api/feedback", json=payload)
     assert res2.status_code == 200
@@ -47,7 +45,6 @@ def test_personal_feedback_submission_and_updates():
     assert data2["data"]["action"] == "updated"
     assert data2["data"]["label"] == "SPAM"
 
-    # 3. Submit UNSURE (Never eligible for direct training)
     payload_unsure = {
         "text": f"Ambiguous interview query about joining date #{ts}.",
         "label": "UNSURE",
@@ -58,9 +55,8 @@ def test_personal_feedback_submission_and_updates():
     assert res3.status_code == 200
     data3 = res3.json()
     assert data3["data"]["label"] == "UNSURE"
-    assert data3["data"]["is_eligible"] == False  # UNSURE is never directly eligible
+    assert data3["data"]["is_eligible"] == False
 
-    # 4. Check feedback retrieval
     check_res = client.get(f"/api/feedback/check?user_id={user_alpha}&message_id=msg-alpha-1-{ts}")
     assert check_res.status_code == 200
     assert check_res.json()["has_feedback"] == True
@@ -74,7 +70,6 @@ def test_multi_user_isolation_and_conflict_detection():
     ts = int(time.time() * 1000)
     shared_text = f"Urgent: Freelance data entry role #{ts}. Submit bank account details to confirm."
     
-    # User 1 marks as SPAM
     client.post("/api/feedback", json={
         "text": shared_text,
         "label": "SPAM",
@@ -82,7 +77,6 @@ def test_multi_user_isolation_and_conflict_detection():
         "message_id": f"msg-shared-1-{ts}"
     })
 
-    # User 2 marks same content as SAFE (cross-tenant conflict!)
     client.post("/api/feedback", json={
         "text": shared_text,
         "label": "SAFE",
@@ -97,7 +91,7 @@ def test_multi_user_isolation_and_conflict_detection():
         rows = cursor.fetchall()
         for r in rows:
             assert r[0] == "cross_user_conflict"
-            assert r[1] == 0  # Conflicted sample quarantined from training eligibility
+            assert r[1] == 0
             
     print("  [PASS] Multi-User Conflict Detection & Anti-Poisoning Quarantine")
 
@@ -114,11 +108,9 @@ def test_per_user_contribution_caps():
             label="SPAM"
         )
 
-    # Extract capped candidate batch
     capped_samples = FeedbackQualityEngine.extract_capped_candidate_samples(DB_PATH, max_total_samples=100)
     flooder_samples = [s for s in capped_samples if s["user_id"] == flood_user]
     
-    # Assert cap was enforced
     assert len(flooder_samples) <= 250
     print(f"  [PASS] Per-User Contribution Cap Enforced ({len(flooder_samples)} samples allowed out of multi-tenant pool)")
 
@@ -135,7 +127,6 @@ def test_candidate_dataset_snapshotting_preserves_master():
 
     version_str, snap_path, total_rows = ContinuousLearningEngine.create_candidate_dataset_snapshot(mock_feedback)
     
-    # Base dataset must be identical and untouched
     after_base = pd.read_parquet("splits/train.parquet")
     assert len(after_base) == original_len
     assert total_rows == original_len + len(mock_feedback)
@@ -147,10 +138,9 @@ def test_validation_gate_and_rollback():
     """Verifies validation gate logic (pass vs reject) and instant rollback."""
     client = TestClient(app)
 
-    # 1. Gate failure test (Precision < 0.9700)
     failing_metrics = {
         "accuracy": 0.9500,
-        "precision": 0.9400,  # Below 0.9700 threshold!
+        "precision": 0.9400,
         "recall": 0.9800,
         "f1_score": 0.9600,
         "f2_score": 0.9700,
@@ -162,7 +152,6 @@ def test_validation_gate_and_rollback():
     assert any("Precision Gate Failed" in r for r in reasons)
     print("  [PASS] Validation Gate Rejection for Sub-Standard Candidate")
 
-    # 2. Gate pass test
     passing_metrics = {
         "accuracy": 0.9860,
         "precision": 0.9790,
@@ -177,7 +166,6 @@ def test_validation_gate_and_rollback():
     assert len(reasons2) == 0
     print("  [PASS] Validation Gate Approval for High-Quality Candidate")
 
-    # 3. Model Rollback API Test
     rollback_res = client.post("/api/models/rollback", json={"target_version_id": "v2.0.0-frozen"})
     assert rollback_res.status_code == 200
     assert rollback_res.json()["status"] == "success"

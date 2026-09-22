@@ -10,7 +10,6 @@ from ml.preprocess import clean_text_for_nlp
 def test_explainer_inference():
     explainer = ModelExplainer()
     
-    # Feature dimension and output schema check
     text = "SkillInfyTech 4-Weeks Internship. Access Fee: ₹89 only via UPI."
     res = explainer.explain(text, model_name="Stacking Ensemble")
     assert res is not None
@@ -24,12 +23,10 @@ def test_explainer_inference():
 def test_unicode_and_empty_edge_cases():
     explainer = ModelExplainer()
     
-    # Empty input
     res_empty = explainer.explain("", model_name="Stacking Ensemble")
     assert res_empty is not None
     assert 0.0 <= res_empty["risk_score"] <= 1.0
     
-    # Extreme unicode / symbols
     res_unicode = explainer.explain("🚀💰🔥 ₹9999 $$$ --- 🎉 !!!", model_name="Stacking Ensemble")
     assert res_unicode is not None
     assert 0.0 <= res_unicode["risk_score"] <= 1.0

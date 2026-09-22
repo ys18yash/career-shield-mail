@@ -81,7 +81,6 @@ def compute_statistical_tests(X_text: list, y: np.ndarray, top_n: int = 25) -> d
     X_tfidf = vectorizer.fit_transform(cleaned_texts)
     feature_names = np.array(vectorizer.get_feature_names_out())
     
-    # 1. Chi-Square (χ²) Test
     chi2_scores, p_values = chi2(X_tfidf, y)
     top_chi2_idx = np.argsort(chi2_scores)[::-1][:top_n]
     
@@ -94,7 +93,6 @@ def compute_statistical_tests(X_text: list, y: np.ndarray, top_n: int = 25) -> d
             "statistically_significant": bool(p_values[idx] < 0.01)
         })
 
-    # 2. Mutual Information
     mi_scores = mutual_info_classif(X_tfidf, y, discrete_features=True, random_state=42)
     top_mi_idx = np.argsort(mi_scores)[::-1][:top_n]
     
@@ -105,7 +103,6 @@ def compute_statistical_tests(X_text: list, y: np.ndarray, top_n: int = 25) -> d
             "mutual_info": round(float(mi_scores[idx]), 4)
         })
 
-    # 3. Dense Security Features ANOVA F-Test
     df_sec = extract_features_df(X_text)
     f_scores, f_pvals = f_classif(df_sec, y)
     

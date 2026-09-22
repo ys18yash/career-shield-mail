@@ -9,25 +9,21 @@ from api.main import app
 def test_api_routes():
     client = TestClient(app)
 
-    # 1. Health
     res = client.get("/api/health")
     assert res.status_code == 200
     assert res.json()["status"] == "healthy"
     print("  [PASS] /api/health")
 
-    # 2. Ready
     res = client.get("/api/ready")
     assert res.status_code == 200
     assert res.json()["status"] == "ready"
     print("  [PASS] /api/ready")
 
-    # 3. Models
     res = client.get("/api/models")
     assert res.status_code == 200
     assert len(res.json()["models"]) >= 8
     print("  [PASS] /api/models")
 
-    # 4. Predict
     payload = {
         "text": "Selected for 4-week Python internship. Access fee ₹89 via GooglePay.",
         "model": "Stacking Ensemble"
@@ -40,13 +36,11 @@ def test_api_routes():
     assert "scan_id" in data
     print("  [PASS] /api/predict (Threat detection)")
 
-    # 5. Feed
     res = client.get("/api/feed")
     assert res.status_code == 200
     assert "inbox" in res.json()
     print("  [PASS] /api/feed")
 
-    # 6. Threshold simulate
     res = client.post("/api/simulate-threshold", json={"threshold": 0.05, "model": "Stacking Ensemble"})
     assert res.status_code == 200
     assert "metrics" in res.json()

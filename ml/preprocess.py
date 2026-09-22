@@ -2,19 +2,16 @@ import re
 import numpy as np
 import pandas as pd
 
-# Free email provider domains commonly abused in phishing/fake job scams
 FREE_EMAIL_DOMAINS = {
     'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'protonmail.com',
     'proton.me', 'rediffmail.com', 'mail.com', 'zoho.com', 'yandex.com', 'gmx.com'
 }
 
-# Suspicious top level domains often seen in scam links
 SUSPICIOUS_TLDS = {
     '.xyz', '.top', '.cc', '.site', '.online', '.club', '.biz', '.info',
     '.work', '.link', '.click', '.zip', '.mov', '.surf', '.space', '.bid'
 }
 
-# Financial, Advance Fee & Micro-Fee Internship Scam Trigger Terms
 FINANCIAL_TRIGGERS_STR = [
     r'(?:registration\s+fee|security\s+deposit|processing\s+fee|application\s+fee|onboarding\s+fee)',
     r'(?:access\s+fee|digital\s+id(?:\s+card)?|id\s+card\s+(?:fee|issuance|access|charges)|platform\s+access(?:\s+fee)?|lms\s+access)',
@@ -27,7 +24,6 @@ FINANCIAL_TRIGGERS_STR = [
 ]
 FINANCIAL_TRIGGERS = [re.compile(p, re.IGNORECASE) for p in FINANCIAL_TRIGGERS_STR]
 
-# Urgency, Psychological Pressure & Marketing Spam Triggers
 URGENCY_TRIGGERS_STR = [
     r'(?:urgent|urgently|immediate|immediately|hurry|limited\s+slots)',
     r'(?:apply\s+today|within\s+\d+\s*(?:hours?|minutes?|mins?))',
@@ -39,7 +35,6 @@ URGENCY_TRIGGERS_STR = [
 ]
 URGENCY_TRIGGERS = [re.compile(p, re.IGNORECASE) for p in URGENCY_TRIGGERS_STR]
 
-# Suspicious communication channels & tracking links
 COMMUNICATION_TRIGGERS_STR = [
     r'(?:whatsapp|telegram|t\.me|wa\.me|bit\.ly|tinyurl|forms\.gle)',
     r'(?:\+91\d{10}|\b\d{10}\b)',
@@ -47,14 +42,12 @@ COMMUNICATION_TRIGGERS_STR = [
 ]
 COMMUNICATION_TRIGGERS = [re.compile(p, re.IGNORECASE) for p in COMMUNICATION_TRIGGERS_STR]
 
-# Fake authority & accreditation claims abused in scam templates
 ACCREDITATION_TRIGGERS_STR = [
     r'(?:registered\s+(?:organization\s+)?under\s+mca|recognized\s+under\s+msme|aligned\s+with\s+aicte|iso\s+certified)',
     r'(?:letter\s+of\s+recommendation\s*\(based\s+on\s+performance\)|completion\s+certificate)'
 ]
 ACCREDITATION_TRIGGERS = [re.compile(p, re.IGNORECASE) for p in ACCREDITATION_TRIGGERS_STR]
 
-# Compiled patterns for single-use checks
 EMAIL_RE = re.compile(r'[\w\.-]+@([\w\.-]+)')
 URL_RE = re.compile(r'https?://[^\s]+|(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}[^\s]*')
 SHORT_URL_RE = re.compile(r'bit\.ly|tinyurl|forms\.gle|t\.me|wa\.me|link\.internshala\.com', re.IGNORECASE)
@@ -63,7 +56,6 @@ MICRO_FEE_P1 = re.compile(r'(?:access\s+fee|digital\s+id|id\s+card\s+issuance|pl
 MICRO_FEE_P2 = re.compile(r'(?:₹|rs\.?|inr|\d+)', re.IGNORECASE)
 WALKIN_RE = re.compile(r'\b(walk-in|office address|tower \d+|tech park|sector \d+)\b', re.IGNORECASE)
 
-# Known brands often impersonated or leveraged
 TARGET_BRANDS = [
     'amazon', 'flipkart', 'tcs', 'infosys', 'wipro', 'hdfc', 'icici',
     'google', 'microsoft', 'reliance', 'jio', 'swiggy', 'zomato', 'deloitte',
@@ -78,11 +70,8 @@ def clean_text_for_nlp(text: str, max_chars: int = 4000) -> str:
         return ""
     if len(text) > max_chars:
         text = text[:max_chars]
-    # Normalize unicode symbols (like Rupee symbol)
     text = text.replace('₹', ' rupee ')
-    # Strip Job Posting prefix if present
     text = re.sub(r'^Job Posting:\s*', '', text, flags=re.IGNORECASE)
-    # Normalize excessive spaces
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
@@ -101,7 +90,6 @@ def extract_linguistic_and_security_features(text: str) -> dict:
     words = cleaned.split()
     word_count = max(len(words), 1)
     
-    # 1. Text statistics
     uppercase_count = sum(1 for c in text if c.isupper())
     uppercase_ratio = uppercase_count / max(char_len, 1)
     digit_count = sum(1 for c in text if c.isdigit())
@@ -110,11 +98,9 @@ def extract_linguistic_and_security_features(text: str) -> dict:
     question_count = text.count('?')
     avg_word_length = char_len / word_count
     
-    # Lexical diversity (Type-Token Ratio)
     unique_words = set(w.lower() for w in words)
     ttr = len(unique_words) / word_count
     
-    # 2. Email & Domain Analysis
     emails = EMAIL_RE.findall(text)
     has_free_email = 0
     has_company_email = 0
@@ -126,29 +112,24 @@ def extract_linguistic_and_security_features(text: str) -> dict:
             else:
                 has_company_email = 1
                 
-    # 3. URL & Link Analysis
     urls = URL_RE.findall(text)
     url_count = len(urls)
     has_short_url = 1 if any(SHORT_URL_RE.search(u) for u in urls) else 0
     has_suspicious_tld = 1 if any(any(u.lower().endswith(tld) or (tld + '/') in u.lower() for tld in SUSPICIOUS_TLDS) for u in urls) else 0
     has_ats_portal = 1 if any(ATS_PORTAL_RE.search(u) for u in urls) else 0
 
-    # 4. Keyword Triggers Counts
     financial_score = sum(len(pat.findall(lower)) for pat in FINANCIAL_TRIGGERS)
     urgency_score = sum(len(pat.findall(lower)) for pat in URGENCY_TRIGGERS)
     comm_score = sum(len(pat.findall(lower)) for pat in COMMUNICATION_TRIGGERS)
     accreditation_score = sum(len(pat.findall(lower)) for pat in ACCREDITATION_TRIGGERS)
     
-    # 5. Micro-fee / ID Card scam detection
     has_micro_fee_trap = 1 if (
         MICRO_FEE_P1.search(lower) and MICRO_FEE_P2.search(lower)
     ) else 0
 
-    # 6. Brand Impersonation & Marketing Traps Signal
     brand_mentions = sum(1 for b in TARGET_BRANDS if b in lower)
     spoof_risk_flag = 1 if (brand_mentions > 0 and (has_free_email or has_short_url or financial_score > 0 or has_micro_fee_trap > 0)) else 0
     
-    # 7. Walk-in & Verified Address Signal
     has_walkin_address = 1 if WALKIN_RE.search(lower) else 0
     
     return {

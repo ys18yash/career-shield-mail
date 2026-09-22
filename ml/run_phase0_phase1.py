@@ -25,7 +25,6 @@ def execute_phase0_and_phase1():
     os.makedirs("reports", exist_ok=True)
     os.makedirs("models", exist_ok=True)
     
-    # --- PHASE 0: PRESERVE BASELINE BENCHMARK ---
     if os.path.exists("models/benchmark_results.json"):
         shutil.copy("models/benchmark_results.json", "models/baseline_benchmark_results.json")
         print("  [Phase 0] Preserved baseline benchmark copy to models/baseline_benchmark_results.json")
@@ -37,7 +36,6 @@ def execute_phase0_and_phase1():
     
     print(f"  [Phase 0] Verified Partitions: Train={len(train_df):,}, Val={len(val_df):,}, Test={len(test_df):,}, Holdout={len(unlabeled_df):,}")
     
-    # Load serialized feature extractors
     word_vec = joblib.load("models/word_vectorizer.joblib")
     char_vec = joblib.load("models/char_vectorizer.joblib")
     sec_extractor = joblib.load("models/security_extractor.joblib")
@@ -48,7 +46,6 @@ def execute_phase0_and_phase1():
     total_dim = n_word + n_char + n_sec
     print(f"  [Phase 0] Feature Pipeline: Word={n_word:,} + Char={n_char:,} + Sec={n_sec} = {total_dim:,} features")
     
-    # Transform Validation & Test datasets
     t0_t = time.time()
     print("  [Phase 1] Transforming validation & test datasets...")
     cleaned_val = [clean_text_for_nlp(t) for t in val_df["text"].tolist()]
@@ -66,7 +63,6 @@ def execute_phase0_and_phase1():
     y_test = test_df["label"].astype(int).values
     print(f"  [Phase 1] Feature transformation complete in {time.time() - t0_t:.2f}s")
     
-    # Load all baseline models
     trained_models = joblib.load("models/trained_models.joblib")
     
     baseline_eval = {
@@ -90,7 +86,6 @@ def execute_phase0_and_phase1():
     print("-" * 105)
     
     for name, model in trained_models.items():
-        # Validation Evaluation
         t0_v = time.time()
         if hasattr(model, "predict_proba"):
             val_probs = model.predict_proba(X_val)[:, 1]
@@ -119,7 +114,6 @@ def execute_phase0_and_phase1():
         }
         baseline_eval["validation_metrics"][name] = val_metrics
         
-        # Test Evaluation
         t0_t = time.time()
         if hasattr(model, "predict_proba"):
             test_probs = model.predict_proba(X_test)[:, 1]

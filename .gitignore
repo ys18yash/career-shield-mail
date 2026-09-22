@@ -1,12 +1,9 @@
-# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 
-# C extensions
 *.so
 
-# Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -24,38 +21,32 @@ wheels/
 .installed.cfg
 *.egg
 
-# Virtual Environments
 .env
 .venv
 env/
 venv/
 ENV/
 
-# Large Datasets (>50MB) & Intermediate Artifacts
 data/candidate_datasets/
 data/processed/*.parquet
 data/raw/
 scratch/
 *.npz
 
-# SQLite & Audit Store
 data/cybershield_store.db*
 data/*.db*
 *.db
 *.sqlite3
 *.log
 
-# IDE & Editor files
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# Documentation & Internal Notes
 Docs/
 docs/
 
-# OS files
 .DS_Store
 Thumbs.db
 

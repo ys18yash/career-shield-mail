@@ -24,7 +24,6 @@ from xgboost import XGBClassifier
 from ml.features import build_feature_pipeline, compute_statistical_tests
 from ml.preprocess import clean_text_for_nlp
 
-# Seed for reproducibility
 RANDOM_STATE = 42
 np.random.seed(RANDOM_STATE)
 os.makedirs("models", exist_ok=True)
@@ -58,14 +57,12 @@ def train_and_benchmark_all():
     print(f"Val Partition   : {len(X_val_raw):6,d} samples (Threat: {np.sum(y_val == 1):,}, Safe: {np.sum(y_val == 0):,})", flush=True)
     print(f"Test Partition  : {len(X_test_raw):6,d} samples (Threat: {np.sum(y_test == 1):,}, Safe: {np.sum(y_test == 0):,})", flush=True)
     
-    # 1. Statistical Hypothesis Tests on Training Set
     print("\n[1/5] Running Statistical Hypothesis Testing (Chi2, Mutual Information, ANOVA)...", flush=True)
     stats_data = compute_statistical_tests(X_train_raw[:15000], y_train[:15000], top_n=30)
     with open("models/statistical_analysis.json", "w", encoding="utf-8") as f:
         json.dump(stats_data, f, indent=2)
     print("  -> Saved statistical analysis to models/statistical_analysis.json", flush=True)
     
-    # 2. Fit Feature Extraction Pipeline on Train Only
     print("\n[2/5] Fitting NLP Vectorizers & Security Features on Train (Leakage-Safe)...", flush=True)
     t_feat = time.time()
     word_vec, char_vec, sec_extractor = build_feature_pipeline()
@@ -97,7 +94,6 @@ def train_and_benchmark_all():
     print(f"     [Word: {X_word_train.shape[1]:,d} | Char: {X_char_train.shape[1]:,d} | Cyber: {X_sec_train.shape[1]:,d}]", flush=True)
     print(f"  -> Preprocessing completed in {time.time() - t_feat:.1f}s", flush=True)
     
-    # 3. Model Suite Definition
     print("\n[3/5] Initializing & Training Multi-Model Suite...", flush=True)
     
     base_models = {
@@ -125,7 +121,6 @@ def train_and_benchmark_all():
         n_jobs=-1
     )
     
-    # 4. Train Models & Evaluate on Validation Set
     val_benchmark_results = {}
     test_benchmark_results = {}
     roc_curves = {}
@@ -146,7 +141,6 @@ def train_and_benchmark_all():
         fit_time = time.time() - t0_fit
         trained_models[name] = model
         
-        # Validation Inference & Probabilities
         t0_pred = time.time()
         if hasattr(model, "predict_proba"):
             val_probs = model.predict_proba(X_val_combined)[:, 1]
@@ -190,7 +184,6 @@ def train_and_benchmark_all():
             "tn": tn
         }
         
-        # Curves for visualization
         fpr, tpr, _ = roc_curve(y_val, val_probs)
         precision_pts, recall_pts, _ = precision_recall_curve(y_val, val_probs)
         step_roc = max(1, len(fpr) // 50)
@@ -206,7 +199,6 @@ def train_and_benchmark_all():
         
         print(f"{name:<25} | {fit_time:7.1f} | {acc:7.4f} | {prec:8.4f} | {rec:8.4f} | {f1:7.4f} | {f2:7.4f} | {auc:7.4f} | {prauc:7.4f} | {fp:5d} | {fn:5d}")
 
-    # 5. Validation-Only Decision Threshold Optimization
     print("\n[4/5] Running Decision Threshold Optimization on VALIDATION Data...", flush=True)
     sorted_models = sorted(val_benchmark_results.items(), key=lambda x: (x[1]['f2_score'], x[1]['f1_score'], x[1]['pr_auc']), reverse=True)
     best_candidate_name = sorted_models[0][0]
@@ -251,7 +243,6 @@ def train_and_benchmark_all():
             
     print(f"  -> Optimal Threshold on Validation (tau*): {best_tau:.3f} | Val F2: {best_tau_f2:.4f}")
     
-    # 6. Single-Pass Final Evaluation on Held-Out Test Set
     print("\n[5/5] Performing Final Evaluation on Held-Out TEST Set (Untouched)...", flush=True)
     print(f"{'Model':<25} | {'Test Acc':<8} | {'Test Prec':<9} | {'Test Rec':<8} | {'Test F1':<7} | {'Test F2':<7} | {'ROC-AUC':<7} | {'PR-AUC':<7} | {'FP':<5} | {'FN':<5}")
     print("-" * 115)
@@ -311,7 +302,6 @@ def train_and_benchmark_all():
     print(f"   Accuracy: {opt_test_acc:.4f} | Precision: {opt_test_prec:.4f} | Recall: {opt_test_rec:.4f} | F1: {opt_test_f1:.4f} | F2: {opt_test_f2:.4f}")
     print(f"   Confusion Matrix: TP={tp_opt:,}, FP={fp_opt:,}, TN={tn_opt:,}, FN={fn_opt:,}")
 
-    # 7. Comprehensive Error Analysis on Validation & Test
     print("\n--- EXTRACTING REPRESENTATIVE ERROR ANALYSIS EXAMPLES ---", flush=True)
     val_cand_preds = (val_probabilities[best_candidate_name] >= 0.50).astype(int)
     
@@ -354,7 +344,6 @@ def train_and_benchmark_all():
         json.dump(error_analysis, f, indent=2)
     print("  -> Saved error analysis samples to models/error_analysis.json", flush=True)
 
-    # 8. Serialize Artifacts
     print("\n--- SERIALIZING TRAINED MODELS & BENCHMARK ARTIFACTS ---", flush=True)
     joblib.dump(trained_models, "models/trained_models.joblib", compress=3)
     joblib.dump(word_vec, "models/word_vectorizer.joblib", compress=3)

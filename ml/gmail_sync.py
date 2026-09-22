@@ -42,7 +42,6 @@ def extract_body_from_message(msg) -> str:
         for part in msg.walk():
             content_type = part.get_content_type()
             content_disposition = str(part.get("Content-Disposition", ""))
-            # Strictly skip attachments to prevent malware processing
             if "attachment" in content_disposition:
                 continue
 
@@ -81,7 +80,6 @@ def extract_body_from_message(msg) -> str:
             body_text = str(msg.get_payload() or "")
 
     raw_combined = body_text.strip() or html_text.strip()
-    # Apply security sanitizer to normalize Unicode, strip scripts/iframes, unescape HTML entities
     return sanitize_email_text(raw_combined, max_chars=35000)
 
 
@@ -122,7 +120,6 @@ class GmailClient:
                 mail = imaplib.IMAP4_SSL(self.imap_server, self.imap_port, timeout=self.timeout)
                 mail.login(self.email_address, self.app_password)
                 
-                # Check target folder; if INBOX, also check [Gmail]/All Mail if needed
                 target_folder = folder
                 if folder.upper() in ["ALL", "ALL MAIL", "[GMAIL]/ALL MAIL"]:
                     target_folder = '"[Gmail]/All Mail"'
@@ -133,33 +130,29 @@ class GmailClient:
 
                 status, _ = mail.select(target_folder, readonly=True)
                 if status != "OK":
-                    # Fallback to All Mail or INBOX
                     status, _ = mail.select('"[Gmail]/All Mail"', readonly=True)
                     if status != "OK":
                         status, _ = mail.select("INBOX", readonly=True)
                         if status != "OK":
                             raise ValueError(f"Could not open mail folder: {folder}")
 
-                # Use UID SEARCH ALL for monotonic persistent ordering
                 status, data = mail.uid('search', None, "ALL")
                 if status != "OK" or not data or not data[0]:
                     return []
 
                 uid_list = data[0].split()
-                # Sort numerically by UID to guarantee chronological order
                 try:
                     uid_list = sorted(uid_list, key=lambda x: int(x))
                 except Exception:
                     pass
 
                 selected_uids = uid_list[-limit:] if len(uid_list) > limit else uid_list
-                selected_uids = selected_uids[::-1]  # Most recent first
+                selected_uids = selected_uids[::-1]
 
                 emails_list = []
                 for uid_b in selected_uids:
                     uid_str = uid_b.decode('utf-8', errors='ignore')
                     try:
-                        # Non-destructive fetch: does not alter \Seen flag on server
                         res, msg_data = mail.uid('fetch', uid_b, "(BODY.PEEK[])")
                         if res != "OK" or not msg_data:
                             continue
@@ -188,7 +181,6 @@ class GmailClient:
                             sender_name = parts[0].strip().strip('"')
                             sender_email = parts[1].split(">", 1)[0].strip()
 
-                        # Parse exact epoch timestamp for perfect chronological sorting
                         timestamp_epoch = time.time()
                         iso_date = datetime.utcnow().isoformat()
                         if date_str:
@@ -220,7 +212,6 @@ class GmailClient:
                     except Exception as parse_err:
                         continue
 
-                # Sort strictly by timestamp descending (newest emails always on top)
                 emails_list.sort(key=lambda x: x.get("timestamp_epoch", 0), reverse=True)
                 return emails_list
             finally:

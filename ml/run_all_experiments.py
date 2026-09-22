@@ -35,9 +35,6 @@ def run_all_pipeline_phases():
     print("CAREERSHIELD ML: COMPREHENSIVE EXPERIMENTAL & HPO PIPELINE (PHASES 2 - 13)")
     print("=" * 80)
     
-    # -------------------------------------------------------------------------
-    # STEP 0: Load data & build / load feature matrices
-    # -------------------------------------------------------------------------
     print("\n>>> [STEP 0] Loading Parquet Splits and Feature Extractors...")
     train_df = pd.read_parquet("splits/train.parquet")
     val_df = pd.read_parquet("splits/validation.parquet")
@@ -52,7 +49,6 @@ def run_all_pipeline_phases():
     char_vec = joblib.load("models/char_vectorizer.joblib")
     sec_extractor = joblib.load("models/security_extractor.joblib")
     
-    # Feature caching for fast execution
     cache_train = "scratch/X_train_combined.npz"
     cache_val = "scratch/X_val_combined.npz"
     cache_test = "scratch/X_test_combined.npz"
@@ -91,16 +87,12 @@ def run_all_pipeline_phases():
         
     print(f"  -> Matrices Ready: Train={X_train.shape}, Val={X_val.shape}, Test={X_test.shape}")
     
-    # -------------------------------------------------------------------------
-    # PHASE 2: GENUINE HYPERPARAMETER OPTIMIZATION (TRAINING DATA ONLY)
-    # -------------------------------------------------------------------------
     print("\n" + "=" * 80)
     print(">>> [PHASE 2] GENUINE HYPERPARAMETER OPTIMIZATION (Stratified 3-Fold CV on Train Only)")
     print("=" * 80)
     
     cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=RANDOM_STATE)
     
-    # Custom F2 scorer
     from sklearn.metrics import make_scorer
     f2_scorer = make_scorer(fbeta_score, beta=2, zero_division=0)
     
@@ -111,7 +103,6 @@ def run_all_pipeline_phases():
         "models": {}
     }
     
-    # 1. Logistic Regression HPO
     print("\n--- [HPO 1/4] Logistic Regression Grid Search ---")
     lr_grid = {
         'C': [0.5, 1.0, 2.0, 5.0],
@@ -127,7 +118,6 @@ def run_all_pipeline_phases():
         n_jobs=1,
         return_train_score=True
     )
-    # Use subset if needed or full train
     lr_search.fit(X_train, y_train)
     lr_time = time.time() - t0
     
@@ -154,7 +144,6 @@ def run_all_pipeline_phases():
     }
     print(f"  Best LR Params: {lr_search.best_params_} | Best CV F2: {lr_search.best_score_:.4f} | Val F2: {hpo_results['models']['Logistic Regression']['validation_metrics']['f2_score']:.4f} ({lr_time:.1f}s)")
     
-    # 2. Linear SVM HPO
     print("\n--- [HPO 2/4] Calibrated Linear SVM Grid Search ---")
     svm_grid = {'C': [0.1, 0.5, 1.0, 2.0]}
     t0 = time.time()
@@ -194,7 +183,6 @@ def run_all_pipeline_phases():
     }
     print(f"  Best SVM Params: {svm_search.best_params_} | Best CV F2: {svm_search.best_score_:.4f} | Val F2: {hpo_results['models']['Support Vector Machine']['validation_metrics']['f2_score']:.4f} ({svm_time:.1f}s)")
 
-    # 3. XGBoost HPO
     print("\n--- [HPO 3/4] XGBoost Parameter Search ---")
     xgb_grid = {
         'n_estimators': [30, 50],
@@ -236,7 +224,6 @@ def run_all_pipeline_phases():
     }
     print(f"  Best XGB Params: {xgb_search.best_params_} | Best CV F2: {xgb_search.best_score_:.4f} | Val F2: {hpo_results['models']['XGBoost']['validation_metrics']['f2_score']:.4f} ({xgb_time:.1f}s)")
 
-    # 4. MLP HPO
     print("\n--- [HPO 4/4] Deep MLP Classifier Search ---")
     mlp_grid = {
         'hidden_layer_sizes': [(128, 64), (64, 32)],
@@ -281,9 +268,6 @@ def run_all_pipeline_phases():
         json.dump(hpo_results, f, indent=2)
     print("  -> Saved reports/phase2_hpo_results.json")
 
-    # -------------------------------------------------------------------------
-    # PHASE 3: PROBABILITY CALIBRATION ANALYSIS
-    # -------------------------------------------------------------------------
     print("\n" + "=" * 80)
     print(">>> [PHASE 3] PROBABILITY CALIBRATION & RELIABILITY ANALYSIS")
     print("=" * 80)
@@ -317,15 +301,10 @@ def run_all_pipeline_phases():
         json.dump(calibration_results, f, indent=2)
     print("  -> Saved reports/phase3_calibration_results.json")
 
-    # -------------------------------------------------------------------------
-    # PHASE 4: DECISION THRESHOLD OPTIMIZATION (VALIDATION SET ONLY)
-    # -------------------------------------------------------------------------
     print("\n" + "=" * 80)
     print(">>> [PHASE 4] DECISION THRESHOLD OPTIMIZATION (Validation-Set Empirics)")
     print("=" * 80)
     
-    # Pick top candidate model based on validation F2 & PR-AUC
-    # Compare MLP vs Calibrated SVM vs LR
     threshold_analysis = {}
     best_tau_dict = {}
     
@@ -370,14 +349,10 @@ def run_all_pipeline_phases():
         json.dump(threshold_analysis, f, indent=2)
     print("  -> Saved reports/phase4_threshold_optimization.json")
 
-    # -------------------------------------------------------------------------
-    # PHASE 5: COMPREHENSIVE ERROR ANALYSIS (DERIVED FROM ACTUAL VALIDATION PREDICTIONS)
-    # -------------------------------------------------------------------------
     print("\n" + "=" * 80)
     print(">>> [PHASE 5] COMPREHENSIVE ERROR ANALYSIS (False Positives & False Negatives)")
     print("=" * 80)
     
-    # Analyze best candidate MLP and Calibrated SVM
     cand_preds = (val_probs_mlp >= threshold_analysis["Deep Neural Net (MLP)"]["optimal_threshold"]).astype(int)
     fp_idx = np.where((cand_preds == 1) & (y_val == 0))[0]
     fn_idx = np.where((cand_preds == 0) & (y_val == 1))[0]
@@ -438,17 +413,10 @@ def run_all_pipeline_phases():
     print(f"  -> Error Analysis Complete: FP={len(fp_idx)}, FN={len(fn_idx)}, TP={len(tp_idx)}, TN={len(tn_idx)}")
     print("  -> Saved reports/phase5_error_analysis.json and models/error_analysis.json")
 
-    # -------------------------------------------------------------------------
-    # PHASE 6: FEATURE FAMILY ABLATION STUDY
-    # -------------------------------------------------------------------------
     print("\n" + "=" * 80)
     print(">>> [PHASE 6] FEATURE FAMILY ABLATION STUDY")
     print("=" * 80)
     
-    # Compare:
-    # Set A: Word TF-IDF only [:, :10000]
-    # Set B: Word + Char TF-IDF [:, :14000]
-    # Set C: Full (Word + Char + 22 Security features) [:, :]
     
     ablation_results = {}
     feature_sets = {
@@ -457,14 +425,12 @@ def run_all_pipeline_phases():
         "C_Word_Char_Security_Full (14.022k)": (0, 14022)
     }
     
-    # Train and evaluate Logistic Regression and Linear SVM on each feature slice
     for f_name, (start_idx, end_idx) in feature_sets.items():
         print(f"\n--- Feature Slice: {f_name} ---")
         X_tr_slice = X_train[:, start_idx:end_idx]
         X_va_slice = X_val[:, start_idx:end_idx]
         X_te_slice = X_test[:, start_idx:end_idx]
         
-        # Logistic Regression
         lr_abl = LogisticRegression(C=2.0, max_iter=1000, class_weight='balanced', random_state=RANDOM_STATE, n_jobs=1)
         lr_abl.fit(X_tr_slice, y_train)
         v_probs_lr_abl = lr_abl.predict_proba(X_va_slice)[:, 1]
@@ -473,7 +439,6 @@ def run_all_pipeline_phases():
         v_preds_lr = (v_probs_lr_abl >= 0.50).astype(int)
         t_preds_lr = (t_probs_lr_abl >= 0.50).astype(int)
         
-        # Linear SVM
         svm_abl = CalibratedClassifierCV(LinearSVC(C=1.0, dual=False, random_state=RANDOM_STATE), cv=3)
         svm_abl.fit(X_tr_slice, y_train)
         v_probs_svm_abl = svm_abl.predict_proba(X_va_slice)[:, 1]
@@ -511,9 +476,6 @@ def run_all_pipeline_phases():
         json.dump(ablation_results, f, indent=2)
     print("  -> Saved reports/phase6_ablation_study.json")
 
-    # -------------------------------------------------------------------------
-    # PHASE 7: SOURCE & DISTRIBUTION GENERALIZATION ANALYSIS
-    # -------------------------------------------------------------------------
     print("\n" + "=" * 80)
     print(">>> [PHASE 7] SOURCE & DISTRIBUTION GENERALIZATION")
     print("=" * 80)
@@ -521,7 +483,6 @@ def run_all_pipeline_phases():
     source_results = {"per_source_evaluation": {}, "cross_domain_evaluation": {}}
     sources = test_df["source"].unique()
     
-    # 1. Per-source performance
     for src in sources:
         mask = (test_df["source"] == src).values
         if np.sum(mask) == 0:
@@ -549,9 +510,6 @@ def run_all_pipeline_phases():
         json.dump(source_results, f, indent=2)
     print("  -> Saved reports/phase7_source_generalization.json")
 
-    # -------------------------------------------------------------------------
-    # PHASE 8: UNLABELLED KAGGLE HOLDOUT ANALYSIS (4,899 records)
-    # -------------------------------------------------------------------------
     print("\n" + "=" * 80)
     print(">>> [PHASE 8] UNLABELLED KAGGLE HOLDOUT ANALYSIS (4,899 Records)")
     print("=" * 80)
@@ -601,14 +559,10 @@ def run_all_pipeline_phases():
             json.dump(holdout_analysis, f, indent=2)
         print("  -> Saved reports/phase8_unlabelled_holdout.json")
 
-    # -------------------------------------------------------------------------
-    # PHASE 9: TRUE STACKING CLASSIFIER VS SOFT VOTING ENSEMBLE
-    # -------------------------------------------------------------------------
     print("\n" + "=" * 80)
     print(">>> [PHASE 9] TRUE STACKING CLASSIFIER VS. SOFT VOTING CONSENSUS EXPERIMENT")
     print("=" * 80)
     
-    # Define constituent estimators
     estimators = [
         ('lr', LogisticRegression(C=2.0, max_iter=1000, class_weight='balanced', random_state=RANDOM_STATE, n_jobs=1)),
         ('svm', CalibratedClassifierCV(LinearSVC(C=1.0, dual=False, random_state=RANDOM_STATE), cv=3)),
@@ -616,7 +570,6 @@ def run_all_pipeline_phases():
         ('xgb', XGBClassifier(n_estimators=30, max_depth=4, max_bin=32, colsample_bytree=0.2, subsample=0.8, tree_method='approx', eval_metric='logloss', random_state=RANDOM_STATE, n_jobs=1))
     ]
     
-    # 1. Soft Voting Ensemble
     print("  -> Training Soft Voting Ensemble...")
     t0_sv = time.time()
     soft_voting = VotingClassifier(estimators=estimators, voting='soft', n_jobs=1)
@@ -628,7 +581,6 @@ def run_all_pipeline_phases():
     v_preds_sv = (v_probs_sv >= 0.50).astype(int)
     t_preds_sv = (t_probs_sv >= 0.50).astype(int)
     
-    # 2. True Stacking Classifier with Out-Of-Fold Meta-Features
     print("  -> Training True Stacking Classifier (Meta-Learner: LogisticRegression, cv=3)...")
     t0_st = time.time()
     true_stacking = StackingClassifier(
@@ -689,17 +641,10 @@ def run_all_pipeline_phases():
         json.dump(ensemble_comp, f, indent=2)
     print("  -> Saved reports/phase9_ensemble_experiment.json")
 
-    # -------------------------------------------------------------------------
-    # PHASE 10 & 11: FINAL MODEL SELECTION & SINGLE-PASS HELD-OUT TEST EVALUATION
-    # -------------------------------------------------------------------------
     print("\n" + "=" * 80)
     print(">>> [PHASE 10 & 11] FINAL MODEL SELECTION & HELD-OUT TEST EVALUATION")
     print("=" * 80)
     
-    # Quantitative selection criteria:
-    # 1. Best standalone accuracy, F1, F2, ROC-AUC, and PR-AUC: Deep Neural Net (MLP)
-    # 2. Frozen optimal decision threshold: tau* = 0.05 (derived purely from validation partition)
-    # 3. Fast linear/calibrated consensus: Stacking/Soft Voting
     
     chosen_model = best_mlp
     chosen_name = "Deep Neural Net (MLP)"
@@ -707,11 +652,9 @@ def run_all_pipeline_phases():
     
     test_probs_final = chosen_model.predict_proba(X_test)[:, 1]
     
-    # Standard threshold 0.50
     test_preds_std = (test_probs_final >= 0.50).astype(int)
     cm_std = confusion_matrix(y_test, test_preds_std)
     
-    # Optimal threshold tau*
     test_preds_opt = (test_probs_final >= chosen_tau).astype(int)
     cm_opt = confusion_matrix(y_test, test_preds_opt)
     
@@ -758,9 +701,6 @@ def run_all_pipeline_phases():
         json.dump(final_test_summary, f, indent=2)
     print("  -> Saved reports/phase11_final_test_results.json")
 
-    # -------------------------------------------------------------------------
-    # PHASE 12: ROBUSTNESS & ADVERSARIAL PERTURBATION TESTING
-    # -------------------------------------------------------------------------
     print("\n" + "=" * 80)
     print(">>> [PHASE 12] ROBUSTNESS & ADVERSARIAL PERTURBATION TESTING")
     print("=" * 80)
@@ -821,9 +761,6 @@ def run_all_pipeline_phases():
         json.dump(robustness_results, f, indent=2)
     print("  -> Saved reports/phase12_robustness_results.json")
 
-    # -------------------------------------------------------------------------
-    # PHASE 13: EXPLAINABILITY PIPELINE VERIFICATION
-    # -------------------------------------------------------------------------
     print("\n" + "=" * 80)
     print(">>> [PHASE 13] EXPLAINABILITY PIPELINE VERIFICATION")
     print("=" * 80)

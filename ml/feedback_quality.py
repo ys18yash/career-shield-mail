@@ -4,14 +4,12 @@ import sqlite3
 from typing import List, Dict, Any, Tuple, Optional
 from collections import defaultdict
 
-# Configurable continuous learning policy parameters
 FEEDBACK_MIN_NEW_LABELS = int(os.environ.get("FEEDBACK_MIN_NEW_LABELS", "500"))
 FEEDBACK_MIN_CONTRIBUTING_USERS = int(os.environ.get("FEEDBACK_MIN_CONTRIBUTING_USERS", "3"))
-FEEDBACK_MAX_USER_SHARE = float(os.environ.get("FEEDBACK_MAX_USER_SHARE", "0.20"))  # Max 20% from a single tenant
+FEEDBACK_MAX_USER_SHARE = float(os.environ.get("FEEDBACK_MAX_USER_SHARE", "0.20"))
 FEEDBACK_MAX_SAMPLES_PER_USER = int(os.environ.get("FEEDBACK_MAX_SAMPLES_PER_USER", "250"))
 FEEDBACK_RATE_LIMIT_PER_MINUTE = int(os.environ.get("FEEDBACK_RATE_LIMIT_PER_MINUTE", "60"))
 
-# In-memory sliding window rate limiter
 _user_submission_timestamps = defaultdict(list)
 
 
@@ -27,7 +25,6 @@ class FeedbackQualityEngine:
         user_key = (user_id or "anonymous").strip().lower()
         timestamps = _user_submission_timestamps[user_key]
         
-        # Purge timestamps older than 60s
         _user_submission_timestamps[user_key] = [t for t in timestamps if t > window_start]
         
         if len(_user_submission_timestamps[user_key]) >= max_requests:
@@ -45,7 +42,6 @@ class FeedbackQualityEngine:
         with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
             
-            # Fetch all eligible un-snapshotted SAFE/SPAM feedback
             cursor.execute('''
                 SELECT user_id, message_hash, label, text_snippet
                 FROM feedback_records
@@ -79,7 +75,6 @@ class FeedbackQualityEngine:
         safe_count = label_counts["SAFE"]
         spam_count = label_counts["SPAM"]
 
-        # Check conditions
         failures = []
         if total_eligible < FEEDBACK_MIN_NEW_LABELS:
             failures.append(f"Insufficient eligible labels: {total_eligible}/{FEEDBACK_MIN_NEW_LABELS}")
@@ -123,7 +118,6 @@ class FeedbackQualityEngine:
         if not rows:
             return []
 
-        # Group by user to enforce fair multi-tenant quotas
         user_buckets = defaultdict(list)
         for r in rows:
             user_buckets[r[1]].append({
@@ -136,7 +130,6 @@ class FeedbackQualityEngine:
                 "created_at": r[5]
             })
 
-        # Calculate max allowed samples per user for this batch
         total_raw = len(rows)
         dynamic_user_cap = max(5, min(FEEDBACK_MAX_SAMPLES_PER_USER, int(total_raw * FEEDBACK_MAX_USER_SHARE)))
 
@@ -144,10 +137,8 @@ class FeedbackQualityEngine:
         seen_hashes = set()
 
         for user_id, samples in user_buckets.items():
-            # Cap samples contributed by this individual user
             capped = samples[:dynamic_user_cap]
             for s in capped:
-                # Secondary deduplication by message hash
                 if s["message_hash"] not in seen_hashes:
                     seen_hashes.add(s["message_hash"])
                     curated_samples.append(s)

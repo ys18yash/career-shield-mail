@@ -1,10 +1,6 @@
-/* ==========================================================================
-   CareerShield Mail - Modern macOS Dark Theme Design System
-   Inspired by Deep Slate / Navy High-End Email Client Aesthetics
-   ========================================================================== */
 
 :root {
-    /* Normal High-Legibility Typography Stack */
+    
     --font-main: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --font-title: 'Outfit', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     --font-serif: 'Playfair Display', Georgia, serif;
@@ -20,9 +16,6 @@
     --transition-smooth: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ==========================================================================
-   SS2 DARK MODE (Exact Reference Palette)
-   ========================================================================== */
 body.dark-theme {
     --bg-window: #16191f;
     --bg-app: #1c1f26;
@@ -34,24 +27,20 @@ body.dark-theme {
     --bg-input: #1c2029;
     --bg-modal-overlay: rgba(10, 12, 16, 0.75);
     
-    /* Text Palette */
     --text-primary: #f1f5f9;
     --text-secondary: #94a3b8;
     --text-muted: #64748b;
     --text-inverse: #0f172a;
 
-    /* Borders & Accents */
     --border-color: #282d38;
     --border-hover: #373e4f;
     --border-active: rgba(59, 130, 246, 0.4);
     
-    /* Primary Accent (SS2 Royal Blue) */
     --primary: #3b82f6;
     --primary-hover: #2563eb;
     --primary-soft: rgba(59, 130, 246, 0.14);
     --primary-border: rgba(59, 130, 246, 0.3);
     
-    /* Threat & Safety Signals */
     --danger: #ef4444;
     --danger-soft: rgba(239, 68, 68, 0.15);
     --danger-border: rgba(239, 68, 68, 0.35);
@@ -67,16 +56,12 @@ body.dark-theme {
     --info: #0ea5e9;
     --info-soft: rgba(14, 165, 233, 0.15);
     
-    /* Shadows */
     --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.25);
     --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.35);
     --shadow-lg: 0 14px 36px rgba(0, 0, 0, 0.5);
     --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.25);
 }
 
-/* ==========================================================================
-   SS1 LIGHT MODE (Exact Reference Palette)
-   ========================================================================== */
 body.light-theme {
     --bg-window: #f4f5fa;
     --bg-app: #f4f5fa;
@@ -88,24 +73,20 @@ body.light-theme {
     --bg-input: #ffffff;
     --bg-modal-overlay: rgba(15, 23, 42, 0.45);
     
-    /* Text Palette: Pure Solid Black & Deep Contrast */
     --text-primary: #000000;
     --text-secondary: #111827;
     --text-muted: #374151;
     --text-inverse: #ffffff;
 
-    /* Borders & Accents */
     --border-color: rgba(203, 213, 225, 0.9);
     --border-hover: rgba(148, 163, 184, 1);
     --border-active: rgba(83, 56, 236, 0.5);
     
-    /* Primary Accent (SS1 Royal Violet/Indigo) */
     --primary: #5338ec;
     --primary-hover: #4329d4;
     --primary-soft: rgba(83, 56, 236, 0.1);
     --primary-border: rgba(83, 56, 236, 0.3);
     
-    /* Threat & Safety Signals */
     --danger: #dc2626;
     --danger-soft: rgba(239, 68, 68, 0.12);
     --danger-border: rgba(239, 68, 68, 0.35);
@@ -121,14 +102,12 @@ body.light-theme {
     --info: #0284c7;
     --info-soft: rgba(2, 132, 199, 0.14);
     
-    /* Shadows */
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.03);
     --shadow-lg: 0 10px 28px rgba(0, 0, 0, 0.1);
     --shadow-glow: 0 0 18px rgba(83, 56, 236, 0.2);
 }
 
-/* Reset & Base */
 *, *::before, *::after {
     margin: 0;
     padding: 0;
@@ -146,7 +125,6 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar Styling */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -162,9 +140,6 @@ body {
     background: rgba(255, 255, 255, 0.22);
 }
 
-/* ==========================================================================
-   MAC-STYLE APP FRAME & LAYOUT CONTAINER
-   ========================================================================== */
 .mac-app-window {
     display: flex;
     width: 100vw;
@@ -173,9 +148,6 @@ body {
     overflow: hidden;
 }
 
-/* ==========================================================================
-   SINGLE UNIFIED MAC-STYLE LEFT SIDEBAR
-   ========================================================================== */
 .sidebar-unified {
     width: 240px;
     background-color: var(--bg-rail);
@@ -267,7 +239,6 @@ body {
     border: 1px solid var(--primary-border);
 }
 
-/* Quick Compose Full-Width Button */
 .compose-action-container {
     margin-bottom: 16px;
 }
@@ -296,7 +267,6 @@ body {
     box-shadow: 0 6px 16px rgba(99, 102, 241, 0.5);
 }
 
-/* Scrollable Content */
 .sidebar-scrollable-content {
     flex: 1;
     overflow-y: auto;
@@ -444,7 +414,6 @@ body {
 .cat-task { background-color: #8b5cf6; }
 .cat-fakejob { background-color: #ef4444; }
 
-/* Unified Sidebar Footer */
 .sidebar-unified-footer {
     margin-top: auto;
     padding-top: 12px;
@@ -507,7 +476,6 @@ body {
     background-color: var(--danger);
 }
 
-/* Rail Category Dots */
 .rail-categories-group {
     display: flex;
     flex-direction: column;
@@ -535,7 +503,6 @@ body {
 .cat-task { background-color: #8b5cf6; }
 .cat-fakejob { background-color: #ef4444; }
 
-/* Rail Footer */
 .rail-footer {
     margin-top: auto;
     display: flex;
@@ -575,9 +542,6 @@ body {
     box-shadow: 0 0 8px var(--success);
 }
 
-/* ==========================================================================
-   MAIN APP LAYOUT (HEADER + WORKSPACE)
-   ========================================================================== */
 .app-main-layout {
     flex: 1;
     display: flex;
@@ -587,9 +551,6 @@ body {
     background-color: var(--bg-app);
 }
 
-/* ==========================================================================
-   TOP APP BAR / HEADER
-   ========================================================================== */
 .app-header {
     height: 58px;
     background-color: var(--bg-rail);
@@ -638,7 +599,6 @@ body {
     border: 1px solid var(--primary-border);
 }
 
-/* Header Search Bar */
 .header-center {
     flex: 1;
     max-width: 520px;
@@ -703,7 +663,6 @@ body {
     margin-left: 6px;
 }
 
-/* Header Right Buttons */
 .header-right {
     display: flex;
     align-items: center;
@@ -849,7 +808,6 @@ body {
     border-radius: var(--radius-full);
 }
 
-/* Icon Buttons */
 .icon-btn, .icon-btn-round {
     width: 34px;
     height: 34px;
@@ -896,16 +854,12 @@ body {
     color: var(--text-primary);
 }
 
-/* ==========================================================================
-   WORKSPACE BODY (SIDEBAR + MAIN PANES)
-   ========================================================================== */
 .workspace-body {
     flex: 1;
     display: flex;
     overflow: hidden;
 }
 
-/* Expandable Left Sidebar */
 .sidebar {
     width: 220px;
     background-color: var(--bg-sidebar);
@@ -1065,9 +1019,6 @@ body {
     margin-top: 2px;
 }
 
-/* ==========================================================================
-   MAIN CONTENT AREA (TOOLBAR + LIST + DETAIL)
-   ========================================================================== */
 .main-content {
     flex: 1;
     display: flex;
@@ -1077,7 +1028,6 @@ body {
     background-color: var(--bg-app);
 }
 
-/* Toolbar */
 .mail-toolbar {
     height: 52px;
     background-color: var(--bg-rail);
@@ -1196,9 +1146,6 @@ body {
     background: var(--bg-card-hover);
 }
 
-/* ==========================================================================
-   EMAIL LIST VIEW (MODERN CARDS)
-   ========================================================================== */
 .email-list-container {
     flex: 1;
     overflow-y: auto;
@@ -1264,7 +1211,6 @@ body.light-theme .email-row.unread {
     color: #f59e0b;
 }
 
-/* Sender Initial Avatar in List Card */
 .email-sender-avatar {
     width: 32px;
     height: 32px;
@@ -1334,9 +1280,6 @@ body.light-theme .email-row.unread {
     flex-shrink: 0;
 }
 
-/* ==========================================================================
-   EMAIL DETAIL & FORENSICS VIEW
-   ========================================================================== */
 .email-detail-container {
     flex: 1;
     display: flex;
@@ -1380,7 +1323,6 @@ body.light-theme .email-row.unread {
     overflow: hidden;
 }
 
-/* Left/Center Detail Reader */
 .detail-mail-view {
     flex: 1;
     overflow-y: auto;
@@ -1463,7 +1405,6 @@ body.light-theme .email-row.unread {
     font-weight: 600;
 }
 
-/* Security Banner */
 .security-banner {
     display: flex;
     align-items: center;
@@ -1487,7 +1428,6 @@ body.light-theme .email-row.unread {
     color: inherit;
 }
 
-/* Human-in-the-Loop Feedback Action Bar */
 .feedback-action-bar {
     display: flex;
     align-items: center;
@@ -1563,7 +1503,6 @@ body.light-theme .feedback-action-bar {
     border-color: var(--border-hover);
 }
 
-/* Email Body Box */
 .email-body-box {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -1662,7 +1601,6 @@ body.light-theme .feedback-action-bar {
     font-family: var(--font-main);
 }
 
-/* Highlighted Tokens in Body (Security X-Ray) */
 .tok-risk, .token-highlight.threat-token {
     background: rgba(239, 68, 68, 0.18);
     color: #ef4444;
@@ -1730,7 +1668,6 @@ body.light-theme .tok-safe, body.light-theme .token-highlight.safe-token {
     border-bottom: 2px solid #059669 !important;
 }
 
-/* Extracted Security Trigger Cards in Inspector */
 .trigger-card {
     background: var(--bg-card);
     border: 1px solid var(--danger-border);
@@ -1778,7 +1715,6 @@ body.light-theme .trigger-desc {
     color: #4b5563;
 }
 
-/* Attachments Preview (Image 3 Inspiration) */
 .attachments-preview-box {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -1850,7 +1786,6 @@ body.light-theme .trigger-desc {
     color: var(--text-muted);
 }
 
-/* Rich Bottom Reply Box (Image 3 & 4 Inspiration) */
 .detail-reply-box {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -1952,9 +1887,6 @@ body.light-theme .trigger-desc {
     gap: 6px;
 }
 
-/* ==========================================================================
-   RIGHT: ML CYBER THREAT INSPECTOR PANEL
-   ========================================================================== */
 .cyber-inspector-panel {
     width: 330px;
     background-color: var(--bg-rail);
@@ -1985,7 +1917,6 @@ body.light-theme .trigger-desc {
     color: var(--text-primary);
 }
 
-/* Risk Gauge Card */
 .risk-gauge-card {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -2039,7 +1970,6 @@ body.light-theme .trigger-desc {
 .threat-level-badge.critical { background: var(--danger-soft); color: var(--danger); }
 .threat-level-badge.suspicious { background: var(--warning-soft); color: var(--warning); }
 
-/* Inspector Sections */
 .inspector-section {
     display: flex;
     flex-direction: column;
@@ -2065,7 +1995,6 @@ body.light-theme .trigger-desc {
     outline: none;
 }
 
-/* Extracted Signals Pill List */
 .triggers-list {
     display: flex;
     flex-wrap: wrap;
@@ -2082,7 +2011,6 @@ body.light-theme .trigger-desc {
     border: 1px solid var(--danger-border);
 }
 
-/* Consensus Table */
 .consensus-table-wrapper {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -2124,7 +2052,6 @@ body.light-theme .consensus-table td {
     border-top-color: #f1f5f9;
 }
 
-/* Math Stats Card */
 .math-stats-card {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -2152,9 +2079,6 @@ body.light-theme .math-stats-card {
     color: var(--text-primary);
 }
 
-/* ==========================================================================
-   MODALS (COMPOSE, ML RESEARCH LAB, GMAIL CONNECT)
-   ========================================================================== */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -2213,7 +2137,6 @@ body.light-theme .math-stats-card {
     flex-shrink: 0;
 }
 
-/* Compose Modal */
 .compose-modal-card {
     width: 680px;
 }
@@ -2296,7 +2219,6 @@ body.light-theme .math-stats-card {
     resize: vertical;
 }
 
-/* Live Scanner Bar in Compose */
 .live-scanner-bar {
     background: var(--bg-rail);
     border: 1px solid var(--border-color);
@@ -2331,7 +2253,6 @@ body.light-theme .math-stats-card {
 .scanner-badge.safe { background: var(--success-soft); color: var(--success); }
 .scanner-badge.spam { background: var(--danger-soft); color: var(--danger); }
 
-/* ML Research Lab Modal */
 .research-modal-card {
     width: 1050px;
 }
@@ -2394,7 +2315,6 @@ body.light-theme .math-stats-card {
     margin-top: 2px;
 }
 
-/* Benchmark Table */
 .table-responsive {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -2421,7 +2341,6 @@ body.light-theme .math-stats-card {
     border-top: 1px solid var(--border-color);
 }
 
-/* Charts Grid */
 .charts-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -2446,7 +2365,6 @@ body.light-theme .math-stats-card {
     height: 250px;
 }
 
-/* Threshold Tuning Simulator */
 .threshold-simulator-container {
     display: flex;
     flex-direction: column;
@@ -2525,7 +2443,6 @@ body.light-theme .math-stats-card {
 .cm-fn { background: var(--danger-soft); color: var(--danger); }
 .cm-tp { background: rgba(99, 102, 241, 0.15); color: var(--primary); }
 
-/* Deep Learning Architecture Card */
 .dl-architecture-card {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -2562,7 +2479,6 @@ body.light-theme .math-stats-card {
     color: var(--text-muted);
 }
 
-/* Error Analysis */
 .error-analysis-list {
     display: flex;
     flex-direction: column;
@@ -2600,7 +2516,6 @@ body.light-theme .math-stats-card {
     color: var(--text-muted);
 }
 
-/* HITL Tab */
 .hitl-kpi-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -2686,7 +2601,6 @@ body.light-theme .math-stats-card {
     border-bottom: 1px solid var(--border-color);
 }
 
-/* Gmail Connect Modal */
 .gmail-modal-card {
     width: 560px;
     max-width: 92vw;
@@ -2879,9 +2793,6 @@ body.light-theme .math-stats-card {
     border-left: 3px solid #10b981;
 }
 
-/* ==========================================================================
-   TOAST NOTIFICATIONS
-   ========================================================================== */
 .toast-container {
     position: fixed;
     bottom: 24px;
@@ -2918,9 +2829,6 @@ body.light-theme .math-stats-card {
     }
 }
 
-/* ==========================================================================
-   HIGH-CONTRAST SOLID BLACK TYPOGRAPHY (LIGHT MODE)
-   ========================================================================== */
 body.light-theme {
     color: #000000;
 }
@@ -3049,7 +2957,6 @@ body.light-theme .btn-fb {
     font-weight: 700;
 }
 
-/* Gmail Modal in Light Mode */
 body.light-theme .gmail-modal-card {
     background: #ffffff;
     border-color: #e2e8f0;
@@ -3105,11 +3012,6 @@ body.light-theme .instructions-content {
     color: #334155;
 }
 
-/* ==========================================================================
-   SCOPED TYPOGRAPHY: PLAYFAIR DISPLAY SERIF (SS1, SS2, SS3 TARGETED AREAS)
-   ========================================================================== */
-
-/* 1. SS1 Area: Unified Left Sidebar */
 .sidebar-unified,
 .sidebar-unified .brand-name,
 .sidebar-unified .brand-badge,
@@ -3126,7 +3028,6 @@ body.light-theme .instructions-content {
     font-family: var(--font-serif) !important;
 }
 
-/* 2. SS2 Area: Top Header Bar & Mail Toolbar */
 .app-header,
 .app-header .search-bar,
 .app-header .search-bar input,
@@ -3148,7 +3049,6 @@ body.light-theme .instructions-content {
     font-family: var(--font-serif) !important;
 }
 
-/* 3. SS3 Area: ML Research & Benchmark Lab Title */
 .research-modal-card .modal-title,
 .research-modal-card .lab-tabs,
 .research-modal-card .lab-tab,
@@ -3156,7 +3056,6 @@ body.light-theme .instructions-content {
     font-family: var(--font-serif) !important;
 }
 
-/* 4. Remaining Areas: Explicit Normal Sans-Serif Typography */
 .email-list-container,
 .email-row,
 .email-sender,

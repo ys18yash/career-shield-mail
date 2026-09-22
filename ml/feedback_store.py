@@ -21,7 +21,6 @@ def init_feedback_schema(db_path: str = DB_PATH):
     with sqlite3.connect(db_path) as conn:
         cursor = conn.cursor()
         
-        # 1. Feedback Records Table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS feedback_records (
                 feedback_id TEXT PRIMARY KEY,
@@ -45,13 +44,11 @@ def init_feedback_schema(db_path: str = DB_PATH):
             )
         ''')
         
-        # Indexes for fast lookup and multi-tenant isolation
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_fb_user ON feedback_records(user_id)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_fb_hash ON feedback_records(message_hash)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_fb_eligible ON feedback_records(is_eligible, label)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_fb_created ON feedback_records(created_at)')
 
-        # 2. Model Versions Registry Table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS model_versions (
                 version_id TEXT PRIMARY KEY,
@@ -71,7 +68,6 @@ def init_feedback_schema(db_path: str = DB_PATH):
             )
         ''')
         
-        # 3. Continuous Learning Run Logs
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS continuous_learning_runs (
                 run_id TEXT PRIMARY KEY,
@@ -87,7 +83,6 @@ def init_feedback_schema(db_path: str = DB_PATH):
             )
         ''')
 
-        # Insert baseline production model if not already present
         cursor.execute("SELECT COUNT(*) FROM model_versions WHERE status = 'production'")
         if cursor.fetchone()[0] == 0:
             cursor.execute('''
@@ -147,14 +142,11 @@ class FeedbackStore:
         now_iso = datetime.utcnow().isoformat()
         snippet = (text or "").strip()[:400]
 
-        # UNSURE is never directly eligible for training
-        # SAFE and SPAM are potentially eligible pending multi-user QC checks
         is_eligible = 1 if label in ("SAFE", "SPAM") else 0
 
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             
-            # Check for existing feedback by this user on this message hash
             cursor.execute(
                 "SELECT feedback_id, label, created_at FROM feedback_records WHERE user_id = ? AND message_hash = ?",
                 (user_id, msg_hash)
@@ -196,7 +188,6 @@ class FeedbackStore:
 
             conn.commit()
 
-        # Check for cross-user conflicts on this message hash asynchronously / inline
         self._check_cross_user_conflicts(msg_hash)
 
         return {
@@ -222,7 +213,6 @@ class FeedbackStore:
             
             has_conflict = len(labels) > 1
             conflict_val = "cross_user_conflict" if has_conflict else "none"
-            # If there is an unresolved cross-user conflict, mark is_eligible = 0
             eligible_val = 0 if has_conflict else 1
 
             cursor.execute('''
@@ -275,25 +265,20 @@ class FeedbackStore:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             
-            # Label counts
             cursor.execute("SELECT label, COUNT(*) FROM feedback_records GROUP BY label")
             counts = {k: 0 for k in ["SAFE", "SPAM", "UNSURE"]}
             for row in cursor.fetchall():
                 counts[row[0]] = row[1]
 
-            # Total and unique stats
             cursor.execute("SELECT COUNT(*), COUNT(DISTINCT user_id), COUNT(DISTINCT message_hash) FROM feedback_records")
             tot, tot_users, tot_msgs = cursor.fetchone()
 
-            # Eligible for training
             cursor.execute("SELECT COUNT(*) FROM feedback_records WHERE is_eligible = 1")
             eligible_cnt = cursor.fetchone()[0]
 
-            # Conflicting records
             cursor.execute("SELECT COUNT(*) FROM feedback_records WHERE conflict_status = 'cross_user_conflict'")
             conflict_cnt = cursor.fetchone()[0]
 
-            # Model vs User disagreement analysis
             cursor.execute('''
                 SELECT 
                     SUM(CASE WHEN original_prediction = 'SPAM' AND label = 'SAFE' THEN 1 ELSE 0 END) as false_positive_reports,
@@ -309,7 +294,6 @@ class FeedbackStore:
                 "user_agreements": row[2] or 0
             }
 
-            # Top contributing users (anonymized/aggregated)
             cursor.execute('''
                 SELECT user_id, COUNT(*) as cnt, SUM(is_eligible) as eligible_cnt
                 FROM feedback_records
@@ -396,9 +380,7 @@ class FeedbackStore:
         now_iso = datetime.utcnow().isoformat()
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            # Archive current production models
             cursor.execute("UPDATE model_versions SET status = 'archived' WHERE status = 'production'")
-            # Promote candidate
             cursor.execute('''
                 UPDATE model_versions
                 SET status = 'production', promoted_at = ?
@@ -428,9 +410,7 @@ class FeedbackStore:
             if not target:
                 raise ValueError(f"Target model version '{target_version_id}' not found in registry.")
 
-            # Archive current production models
             cursor.execute("UPDATE model_versions SET status = 'archived' WHERE status = 'production'")
-            # Set target to production
             cursor.execute('''
                 UPDATE model_versions
                 SET status = 'production', promoted_at = ?

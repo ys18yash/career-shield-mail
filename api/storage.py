@@ -82,7 +82,6 @@ class StorageManager:
                     ))
                 conn.commit()
         except Exception as e:
-            # Storage logging should be non-blocking for inference
             pass
 
     def get_recent_scans(self, limit: int = 20) -> List[Dict[str, Any]]:
@@ -121,5 +120,4 @@ class StorageManager:
         except Exception:
             return []
 
-# Singleton instance
 storage = StorageManager()

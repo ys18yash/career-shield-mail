@@ -30,7 +30,6 @@ def run_pipeline():
         "duplicates_removed": 0
     }
 
-    # 1. INDIAN JOB SCAM
     ind_path = "data/raw/indian_job_scam/smolified_fakejob_expanded.jsonl"
     ind_count = 0
     ind_orig_labels = {}
@@ -81,7 +80,6 @@ def run_pipeline():
         "normalized_labels": ind_norm_labels
     }
 
-    # 2. EMSCAD FAKE JOB
     emscad_count = 0
     emscad_orig_labels = {}
     emscad_norm_labels = {}
@@ -183,7 +181,6 @@ def run_pipeline():
         "normalized_labels": emscad_norm_labels
     }
 
-    # 3. PHISHING EMAIL
     phish_count = 0
     phish_orig_labels = {}
     phish_norm_labels = {}
@@ -241,7 +238,6 @@ def run_pipeline():
         "normalized_labels": phish_norm_labels
     }
 
-    # 4. SPAM PROMOTIONAL
     spam_count = 0
     spam_orig_labels = {}
     spam_norm_labels = {}
@@ -299,7 +295,6 @@ def run_pipeline():
         "normalized_labels": spam_norm_labels
     }
 
-    # MERGE & DEDUPLICATE
     df_all = pd.DataFrame(all_records)
     total_before = len(df_all)
     audit_data["total_rows_before_merge"] = total_before

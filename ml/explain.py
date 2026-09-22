@@ -15,20 +15,17 @@ class ModelExplainer:
         self.char_vec = char_vec_path and joblib.load(char_vec_path)
         self.sec_extractor = joblib.load(sec_ext_path)
 
-        # Precompute vocabulary and linear coefficients from Logistic Regression & Naive Bayes
         self.lr_model = self.models.get('Logistic Regression')
         self.nb_model = self.models.get('Naive Bayes')
         
         self.word_feature_names = self.word_vec.get_feature_names_out()
         self.word_vocab = {term: idx for idx, term in enumerate(self.word_feature_names)}
 
-        # LR weights for word tokens
         if self.lr_model is not None and hasattr(self.lr_model, 'coef_'):
             self.word_weights = self.lr_model.coef_[0][:len(self.word_feature_names)]
         else:
             self.word_weights = np.zeros(len(self.word_feature_names))
 
-        # Naive Bayes log-probability ratio
         if self.nb_model is not None and hasattr(self.nb_model, 'feature_log_prob_'):
             self.nb_log_ratios = self.nb_model.feature_log_prob_[1][:len(self.word_feature_names)] - \
                                  self.nb_model.feature_log_prob_[0][:len(self.word_feature_names)]
@@ -49,7 +46,6 @@ class ModelExplainer:
         model = self.models[model_name]
         X_feat = self.transform_text(text)
 
-        # 1. Prediction & Calibrated Probability
         if hasattr(model, "predict_proba"):
             probs = model.predict_proba(X_feat)[0]
             risk_score = float(probs[1])
@@ -62,7 +58,6 @@ class ModelExplainer:
         is_spam = bool(risk_score >= 0.50)
         label = "Spam / Phishing Scam" if is_spam else "Legitimate Email"
 
-        # Threat Level
         if risk_score >= 0.80:
             threat_level = "CRITICAL THREAT"
             threat_color = "red"
@@ -76,7 +71,6 @@ class ModelExplainer:
             threat_level = "VERIFIED SAFE"
             threat_color = "green"
 
-        # 2. Extract Security Signals
         sec_signals = extract_linguistic_and_security_features(text)
         triggers = []
         lower = text.lower()
@@ -158,7 +152,6 @@ class ModelExplainer:
                 "detail": "Sent from authentic corporate work email domain."
             })
 
-        # 3. Token-Level Attribution Heatmap
         tokens = re.findall(r'\b\w+\b|[^\w\s]', text)
         token_attributions = []
         
@@ -169,7 +162,6 @@ class ModelExplainer:
                 idx = self.word_vocab[tok_lower]
                 weight = float(self.word_weights[idx]) if idx < len(self.word_weights) else 0.0
 
-            # Override heuristics for prominent triggers
             if re.match(r'^(deposit|fee|fees|charge|charges|access|id|digital|issuance|upi|gpay|paytm|rupees|rupee|inr|₹|guaranteed|telegram|whatsapp|bootcamp|maang|coupon|counsellor|scholarship|89|99|199|499)$', tok_lower):
                 weight = max(weight, 1.8)
             elif re.match(r'^(interview|portal|responsibilities|stipend|hybrid|bangalore|pune|hyderabad)$', tok_lower):
@@ -182,8 +174,7 @@ class ModelExplainer:
                 "type": tok_type
             })
 
-        # 4. Bayes Math & Statistics Decomposition
-        prior_prob = 0.6044  # Prior from dataset
+        prior_prob = 0.6044
         prior_log_odds = float(np.log(prior_prob / (1 - prior_prob)))
         evidence_score = float(np.log(risk_score / (1 - risk_score + 1e-8))) - prior_log_odds
 
@@ -195,7 +186,6 @@ class ModelExplainer:
             "model_used": model_name
         }
 
-        # 5. Multi-Model Consensus (What do other models think of this email?)
         model_consensus = {}
         for m_name, m_obj in self.models.items():
             if hasattr(m_obj, "predict_proba"):
