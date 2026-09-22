@@ -1,3 +1,4 @@
+import os
 import re
 import gc
 import joblib
@@ -11,17 +12,19 @@ class ModelExplainer:
                  word_vec_path='models/word_vectorizer.joblib',
                  char_vec_path='models/char_vectorizer.joblib',
                  sec_ext_path='models/security_extractor.joblib'):
-        self.models = joblib.load(models_path)
+        self.models_path = models_path
+        self.individual_dir = 'models/individual'
+        self._loaded_models = {}
+
         self.word_vec = joblib.load(word_vec_path)
         self.char_vec = char_vec_path and joblib.load(char_vec_path)
         self.sec_extractor = joblib.load(sec_ext_path)
-        gc.collect()
 
-        self.lr_model = self.models.get('Logistic Regression')
-        self.nb_model = self.models.get('Naive Bayes')
-        
         self.word_feature_names = self.word_vec.get_feature_names_out()
         self.word_vocab = {term: idx for idx, term in enumerate(self.word_feature_names)}
+
+        self.lr_model = self.get_model('Logistic Regression')
+        self.nb_model = self.get_model('Naive Bayes')
 
         if self.lr_model is not None and hasattr(self.lr_model, 'coef_'):
             self.word_weights = self.lr_model.coef_[0][:len(self.word_feature_names)]
@@ -33,6 +36,33 @@ class ModelExplainer:
                                  self.nb_model.feature_log_prob_[0][:len(self.word_feature_names)]
         else:
             self.nb_log_ratios = np.zeros(len(self.word_feature_names))
+        
+        gc.collect()
+
+    def get_model(self, model_name: str):
+        if model_name in self._loaded_models:
+            return self._loaded_models[model_name]
+
+        safe_name = model_name.lower().replace(' ', '_').replace('(', '').replace(')', '')
+        indiv_path = os.path.join(self.individual_dir, f"{safe_name}.joblib")
+        if os.path.exists(indiv_path):
+            try:
+                m = joblib.load(indiv_path)
+                self._loaded_models[model_name] = m
+                return m
+            except Exception as e:
+                print(f"[ModelExplainer] Error loading {indiv_path}: {e}")
+
+        if not hasattr(self, '_all_monolithic_models') and os.path.exists(self.models_path):
+            try:
+                self._all_monolithic_models = joblib.load(self.models_path)
+            except Exception:
+                self._all_monolithic_models = {}
+
+        if hasattr(self, '_all_monolithic_models') and model_name in self._all_monolithic_models:
+            return self._all_monolithic_models[model_name]
+
+        return None
 
     def transform_text(self, text: str):
         cleaned = clean_text_for_nlp(text)
@@ -42,10 +72,10 @@ class ModelExplainer:
         return sparse.hstack([X_w, X_c, X_s]).tocsr()
 
     def explain(self, text: str, model_name: str = "Stacking Ensemble") -> dict:
-        if model_name not in self.models:
-            model_name = "Stacking Ensemble" if "Stacking Ensemble" in self.models else list(self.models.keys())[0]
+        model = self.get_model(model_name)
+        if model is None:
+            model = self.get_model("Stacking Ensemble") or self.get_model("Logistic Regression")
             
-        model = self.models[model_name]
         X_feat = self.transform_text(text)
 
         if hasattr(model, "predict_proba"):
@@ -53,9 +83,12 @@ class ModelExplainer:
             risk_score = float(probs[1])
         elif hasattr(model, "decision_function"):
             df_val = float(model.decision_function(X_feat)[0])
-            risk_score = 1.0 / (1.0 + np.exp(-df_val))
+            risk_score = float(1.0 / (1.0 + np.exp(-np.clip(df_val, -20.0, 20.0))))
         else:
-            risk_score = float(model.predict(X_feat)[0])
+            pred_val = float(model.predict(X_feat)[0])
+            risk_score = 1.0 if pred_val > 0.5 else 0.0
+
+        risk_score = float(np.clip(risk_score, 0.0, 1.0))
 
         is_spam = bool(risk_score >= 0.50)
         label = "Spam / Phishing Scam" if is_spam else "Legitimate Email"
@@ -189,14 +222,20 @@ class ModelExplainer:
         }
 
         model_consensus = {}
-        for m_name, m_obj in self.models.items():
+        primary_names = ['Logistic Regression', 'Naive Bayes', 'Support Vector Machine', 'Stacking Ensemble']
+        for m_name in primary_names:
+            m_obj = self.get_model(m_name)
+            if m_obj is None:
+                continue
             if hasattr(m_obj, "predict_proba"):
                 m_risk = float(m_obj.predict_proba(X_feat)[0, 1])
             elif hasattr(m_obj, "decision_function"):
                 df_val = float(m_obj.decision_function(X_feat)[0])
-                m_risk = float(1.0 / (1.0 + np.exp(-df_val)))
+                m_risk = float(1.0 / (1.0 + np.exp(-np.clip(df_val, -20.0, 20.0))))
             else:
-                m_risk = float(m_obj.predict(X_feat)[0])
+                pred_v = float(m_obj.predict(X_feat)[0])
+                m_risk = 1.0 if pred_v > 0.5 else 0.0
+            m_risk = float(np.clip(m_risk, 0.0, 1.0))
             model_consensus[m_name] = {
                 "risk_score": round(m_risk, 4),
                 "classification": "Spam" if m_risk >= 0.5 else "Legitimate"
