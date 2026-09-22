@@ -1,4 +1,5 @@
 import re
+import gc
 import joblib
 import numpy as np
 from scipy import sparse
@@ -14,6 +15,7 @@ class ModelExplainer:
         self.word_vec = joblib.load(word_vec_path)
         self.char_vec = char_vec_path and joblib.load(char_vec_path)
         self.sec_extractor = joblib.load(sec_ext_path)
+        gc.collect()
 
         self.lr_model = self.models.get('Logistic Regression')
         self.nb_model = self.models.get('Naive Bayes')
