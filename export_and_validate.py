@@ -13,22 +13,18 @@ def validate_and_create_splits():
     print(f"Total Records: {len(df)}")
     print(f"Columns: {df.columns.tolist()}")
     
-    # 1. Null check
     null_counts = df.isnull().sum().to_dict()
     print(f"Null Values per column: {null_counts}")
     assert sum(null_counts.values()) == 0, "Null values found!"
     
-    # 2. Duplicate check
     duplicate_users = df.duplicated(subset=['user']).sum()
     print(f"Duplicate 'user' prompts: {duplicate_users}")
     assert duplicate_users == 0, "Duplicate prompts found!"
     
-    # 3. Format check
     invalid_assistant = df[~df['assistant'].str.startswith(('Classification: Fake.', 'Classification: Real.'))]
     print(f"Invalid 'assistant' outputs: {len(invalid_assistant)}")
     assert len(invalid_assistant) == 0, "Invalid assistant classification format!"
     
-    # 4. Class Distribution
     fake_mask = df['assistant'].str.startswith('Classification: Fake.')
     real_mask = df['assistant'].str.startswith('Classification: Real.')
     fake_count = fake_mask.sum()
@@ -36,7 +32,6 @@ def validate_and_create_splits():
     print(f"Fake Jobs: {fake_count} ({fake_count/len(df)*100:.2f}%)")
     print(f"Real Jobs: {real_count} ({real_count/len(df)*100:.2f}%)")
     
-    # 5. Length statistics
     user_len = df['user'].str.len()
     asst_len = df['assistant'].str.len()
     
@@ -73,13 +68,11 @@ def validate_and_create_splits():
         json.dump(stats, f, indent=2)
     print("\nSaved summary to dataset_summary.json")
     
-    # 6. Create Train / Val / Test Splits (80 / 10 / 10) stratified by label
     import os
     os.makedirs('splits', exist_ok=True)
     
     df['label'] = np.where(df['assistant'].str.startswith('Classification: Fake.'), 'fake', 'real')
     
-    # Stratified split
     train_dfs, val_dfs, test_dfs = [], [], []
     for label, group in df.groupby('label'):
         shuffled = group.sample(frac=1.0, random_state=42).reset_index(drop=True)

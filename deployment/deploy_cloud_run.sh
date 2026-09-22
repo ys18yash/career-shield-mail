@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-# ==============================================================================
-# CareerShield Mail - Google Cloud Run Deployment Script
-# ==============================================================================
 set -euo pipefail
 
 PROJECT_ID="${GCP_PROJECT_ID:-careershield-mail-prod}"
@@ -16,11 +13,9 @@ echo "Region  : ${REGION}"
 echo "Service : ${SERVICE_NAME}"
 echo "=================================================================="
 
-# 1. Build container image via Google Cloud Build
 echo ">>> [1/3] Building container image via Google Cloud Build..."
 gcloud builds submit --project="${PROJECT_ID}" --tag="${IMAGE_NAME}" .
 
-# 2. Deploy to Cloud Run
 echo ">>> [2/3] Deploying container to Cloud Run..."
 gcloud run deploy "${SERVICE_NAME}" \
     --project="${PROJECT_ID}" \
@@ -35,7 +30,6 @@ gcloud run deploy "${SERVICE_NAME}" \
     --port=8080 \
     --set-env-vars="PORT=8080,CORS_ORIGINS=*"
 
-# 3. Retrieve service URL
 SERVICE_URL=$(gcloud run services describe "${SERVICE_NAME}" --project="${PROJECT_ID}" --region="${REGION}" --format="value(status.url)")
 echo "=================================================================="
 echo "SUCCESS! Cloud Run Service deployed at: ${SERVICE_URL}"

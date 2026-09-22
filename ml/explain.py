@@ -34,10 +34,22 @@ class ModelExplainer:
         if self.nb_model is not None and hasattr(self.nb_model, 'feature_log_prob_'):
             self.nb_log_ratios = self.nb_model.feature_log_prob_[1][:len(self.word_feature_names)] - \
                                  self.nb_model.feature_log_prob_[0][:len(self.word_feature_names)]
-        else:
-            self.nb_log_ratios = np.zeros(len(self.word_feature_names))
-        
         gc.collect()
+
+    @property
+    def models(self):
+        """Backwards compatibility property exposing the 8 models dictionary."""
+        model_names = [
+            "Naive Bayes", "Logistic Regression", "Support Vector Machine",
+            "Random Forest", "Extra Trees Ensemble", "XGBoost",
+            "Deep Neural Net (MLP)", "Stacking Ensemble"
+        ]
+        res = {}
+        for name in model_names:
+            m = self.get_model(name)
+            if m is not None:
+                res[name] = m
+        return res
 
     def _patch_model_compat(self, m):
         if m is None:
@@ -98,8 +110,34 @@ class ModelExplainer:
         X_feat = self.transform_text(text)
 
         try:
-            if hasattr(model, "predict_proba"):
-                probs = model.predict_proba(X_feat)[0]
+            if model_name == "Stacking Ensemble":
+                base_names = ["Logistic Regression", "Support Vector Machine", "Naive Bayes", "Deep Neural Net (MLP)", "XGBoost"]
+                sub_scores = []
+                for b_name in base_names:
+                    bm = self.get_model(b_name)
+                    if bm is not None:
+                        try:
+                            if hasattr(bm, "predict_proba"):
+                                bp = np.array(bm.predict_proba(X_feat)[0], dtype=float)
+                                if np.sum(bp) > 0:
+                                    bp = bp / np.sum(bp)
+                                sub_scores.append(float(bp[1]))
+                            elif hasattr(bm, "decision_function"):
+                                bdf = float(bm.decision_function(X_feat)[0])
+                                sub_scores.append(float(1.0 / (1.0 + np.exp(-np.clip(bdf, -20.0, 20.0)))))
+                        except Exception:
+                            pass
+                if sub_scores:
+                    risk_score = float(np.mean(sub_scores))
+                else:
+                    probs = np.array(model.predict_proba(X_feat)[0], dtype=float)
+                    if np.sum(probs) > 0:
+                        probs = probs / np.sum(probs)
+                    risk_score = float(probs[1])
+            elif hasattr(model, "predict_proba"):
+                probs = np.array(model.predict_proba(X_feat)[0], dtype=float)
+                if np.sum(probs) > 0:
+                    probs = probs / np.sum(probs)
                 risk_score = float(probs[1])
             elif hasattr(model, "decision_function"):
                 df_val = float(model.decision_function(X_feat)[0])
@@ -110,7 +148,10 @@ class ModelExplainer:
         except Exception as pred_err:
             fb_model = self.get_model("Logistic Regression")
             if fb_model and hasattr(fb_model, "predict_proba"):
-                risk_score = float(fb_model.predict_proba(X_feat)[0, 1])
+                p_fb = np.array(fb_model.predict_proba(X_feat)[0], dtype=float)
+                if np.sum(p_fb) > 0:
+                    p_fb = p_fb / np.sum(p_fb)
+                risk_score = float(p_fb[1])
             else:
                 risk_score = 0.50
 
@@ -247,15 +288,22 @@ class ModelExplainer:
             "model_used": model_name
         }
 
+        all_names = [
+            "Naive Bayes", "Logistic Regression", "Support Vector Machine",
+            "Random Forest", "Extra Trees Ensemble", "XGBoost",
+            "Deep Neural Net (MLP)", "Stacking Ensemble"
+        ]
         model_consensus = {}
-        primary_names = ['Logistic Regression', 'Naive Bayes', 'Support Vector Machine', 'Stacking Ensemble']
-        for m_name in primary_names:
+        for m_name in all_names:
             m_obj = self.get_model(m_name)
             if m_obj is None:
                 continue
             try:
                 if hasattr(m_obj, "predict_proba"):
-                    m_risk = float(m_obj.predict_proba(X_feat)[0, 1])
+                    m_probs = np.array(m_obj.predict_proba(X_feat)[0], dtype=float)
+                    if np.sum(m_probs) > 0:
+                        m_probs = m_probs / np.sum(m_probs)
+                    m_risk = float(m_probs[1])
                 elif hasattr(m_obj, "decision_function"):
                     df_val = float(m_obj.decision_function(X_feat)[0])
                     m_risk = float(1.0 / (1.0 + np.exp(-np.clip(df_val, -20.0, 20.0))))

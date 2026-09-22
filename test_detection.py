@@ -33,7 +33,6 @@ for title, body in emails.items():
     for trg in res["security_triggers"]:
         print(f"    - [{trg['severity']}] {trg['category']}: {trg['detail']}")
     
-    # Model consensus
     consensus_str = ", ".join([f"{m}: {data['classification']} ({data['risk_score']*100:.0f}%)" for m, data in res["model_consensus"].items()])
     print(f"  Consensus    : {consensus_str}")
 

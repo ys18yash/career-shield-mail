@@ -4,11 +4,13 @@ import sqlite3
 import time
 from datetime import datetime
 from typing import List, Dict, Any, Optional
+from ml.security_alerts import init_security_alert_schema
 
-DB_PATH = os.environ.get("CAREERSHIELD_DB_PATH", os.environ.get("CYBERSHIELD_DB_PATH", "data/careershield_store.db" if os.path.exists("data/careershield_store.db") else ("data/cybershield_store.db" if os.path.exists("data/cybershield_store.db") else "data/careershield_store.db")))
+DB_PATH = os.environ.get("CAREERSHIELD_DB_PATH", os.environ.get("CYBERSHIELD_DB_PATH", "data/careershield_store.db" if os.path.exists("data/careershield_store.db") else "data/careershield_store.db"))
+
 
 def init_db(db_path: str = DB_PATH):
-    """Initializes SQLite database schema for persistent threat logging and email metadata."""
+    """Initializes SQLite database schema for persistent threat logging, quarantine, and security alerts."""
     os.makedirs(os.path.dirname(os.path.abspath(db_path)), exist_ok=True)
     with sqlite3.connect(db_path) as conn:
         cursor = conn.cursor()
@@ -38,6 +40,10 @@ def init_db(db_path: str = DB_PATH):
             )
         ''')
         conn.commit()
+
+    # Initialize alerts and timeline schemas
+    init_security_alert_schema(db_path)
+
 
 class StorageManager:
     def __init__(self, db_path: str = DB_PATH):
@@ -119,5 +125,6 @@ class StorageManager:
                 return [dict(r) for r in cursor.fetchall()]
         except Exception:
             return []
+
 
 storage = StorageManager()

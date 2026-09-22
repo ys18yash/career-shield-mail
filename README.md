@@ -37,7 +37,7 @@ CareerShield Mail addresses the growing sophistication of employment fraud and t
 
 ```mermaid
 flowchart TD
-    Client["Client / Web Interface<br/>(Firebase Hosting Dashboard)"]
+    Client["Client / Web Interface<br/>(Incident Console & Inbox)"]
     
     subgraph IngestionLayer["Ingestion & Communication Layer"]
         FastAPI["FastAPI Asynchronous Gateway<br/>(Uvicorn ASGI Engine)"]
@@ -46,7 +46,7 @@ flowchart TD
     end
 
     subgraph FeatureEngineering["14,022-Dimensional Feature Pipeline"]
-        Preprocessor["Text Normalizer & Cleaner"]
+        Preprocessor["Text Normalizer & Sanitizer"]
         WordTFIDF["Word TF-IDF Vectorizer<br/>(1-2 n-grams, 10,000 dims)"]
         CharTFIDF["Char Boundary TF-IDF<br/>(3-5 n-grams, 4,000 dims)"]
         DenseExtractor["22 Dense Cyber Heuristics<br/>(Fee, Channel, Urgency Rules)"]
@@ -60,11 +60,17 @@ flowchart TD
         ThresholdCalibrator["Threshold Tuner (tau* = 0.050)"]
     end
 
+    subgraph SecurityIntelligence["Security Intelligence & Threat Triage"]
+        IOCExtractorModule["IOC Extraction & Normalization<br/>(URLs, Domains, IPs, UPI, Hashes)"]
+        ThreatIntelServiceModule["Threat Intelligence Service<br/>(Dual Cache + Multi-Provider Engine)"]
+        RiskCorrelatorModule["Transparent Risk Correlator<br/>(5-Vector Weighted Scoring & Overrides)"]
+        AlertManagerModule["Security Alerts & Audit Timeline<br/>(Lifecycle Triage & Event Graph)"]
+    end
+
     subgraph ExplainabilityHITL["Explainability & Continuous Learning"]
-        TokenAttribution["Token-Level X-Ray Analyzer"]
-        BayesEvidence["Bayesian Log-Odds Likelihood Engine"]
-        HITL["Human-in-the-Loop Feedback Buffer"]
-        QuarantineDB["SQLite Persistence Store"]
+        TriLayerExplainability["Tri-Layer Explainability Console<br/>(L1: IOC Intel | L2: Rules | L3: ML Attribution)"]
+        HITL["Human-in-the-Loop Feedback Queue<br/>(Multi-Tenant Anti-Poisoning Gates)"]
+        QuarantineDB["SQLite Persistence Store<br/>(Threat Intel & Timeline Tables)"]
     end
 
     Client -->|HTTP REST / JSON| FastAPI
@@ -87,15 +93,54 @@ flowchart TD
     MLP --> ThresholdCalibrator
     Stacking --> ThresholdCalibrator
     
-    ThresholdCalibrator --> TokenAttribution
-    ThresholdCalibrator --> BayesEvidence
-    ThresholdCalibrator --> HITL
-    ThresholdCalibrator --> QuarantineDB
+    ThresholdCalibrator --> IOCExtractorModule
+    IOCExtractorModule --> ThreatIntelServiceModule
+    ThreatIntelServiceModule --> RiskCorrelatorModule
+    RiskCorrelatorModule --> AlertManagerModule
     
-    TokenAttribution -->|Explainability Payload| FastAPI
-    BayesEvidence -->|Diagnostic Telemetry| FastAPI
-    FastAPI -->|JSON Threat Assessment| Client
+    AlertManagerModule --> TriLayerExplainability
+    AlertManagerModule --> HITL
+    AlertManagerModule --> QuarantineDB
+    
+    TriLayerExplainability -->|Investigation Payload| FastAPI
+    FastAPI -->|JSON Security Threat Assessment| Client
 ```
+
+---
+
+## Security Intelligence & Automated Threat Triage Architecture
+
+CareerShield Mail features a comprehensive, production-grade security intelligence and triage workflow:
+
+$$\text{Email} \longrightarrow \text{ML Threat Detection} \longrightarrow \text{IOC Extraction} \longrightarrow \text{Threat Intelligence} \longrightarrow \text{Risk Correlation} \longrightarrow \text{Security Alert} \longrightarrow \text{Incident Investigation} \longrightarrow \text{Analyst Feedback} \longrightarrow \text{Continuous Learning}$$
+
+### 1. Indicators of Compromise (IOC) Extraction Engine
+- **Supported Indicator Vectors**: URLs (with sub-domain decomposition), fully qualified domains (FQDNs), IPv4 addresses, IPv6 addresses, RFC 5322 email addresses, Indian P2P payment handles (UPI PSPs: `@upi`, `@okaxis`, `@okhdfcbank`, `@paytm`, `@ybl`, etc.), cryptographic file hashes (SHA-256, SHA-1, MD5), and attached/referenced filenames.
+- **Safety & Defanging**: All extracted indicators are defanged (`hxxp://`, `[.]`, `[at]`, `[:]`) to prevent accidental execution in incident reports and SIEM forwarders.
+- **ReDoS Resistance**: Regular expressions are bounded with input-length caps (100,000 chars) and linear parsing guarantees.
+
+### 2. Modular Threat Intelligence Enrichment
+- **Multi-Provider Architecture**: Extensible `BaseThreatIntelProvider` supporting `LocalDevelopmentIntelProvider` (curated educational and known threat signatures labeled as *"Local Development Intelligence"*) and `ExternalApiIntelProvider` (HTTP APIs with strict timeout controls and anti-SSRF protections).
+- **Dual-Layer Caching**: In-memory LRU cache + persistent SQLite table (`threat_intel_cache`) with 24-hour TTL.
+- **Strict Non-Fabrication Guarantee**: Missing or unseen indicators are explicitly returned as `"Unknown / Not Available"` with 0.0 risk score—the engine **never** fabricates intelligence or assumes unknown indicators are safe.
+
+### 3. Transparent Security Risk Correlation
+- **Deterministic 5-Vector Weighted Scoring**:
+  $$\text{Score} = 0.35 \cdot \text{ML} + 0.25 \cdot \text{IOC} + 0.15 \cdot \text{Sender} + 0.15 \cdot \text{Link} + 0.10 \cdot \text{Content}$$
+- **Hard Escalation Overrides**:
+  - Confirmed `MALICIOUS` IOC reputation or micro-fee scam structure $\Longrightarrow$ Minimum $0.88$ (CRITICAL).
+  - ML Threat Probability $\ge 0.90 \Longrightarrow$ Minimum $0.82$ (CRITICAL).
+  - Brand Impersonation + Disposable/Free Email $\Longrightarrow$ Minimum $0.75$ (HIGH).
+- **Primary Threat Categorization**: Automated categorization into *Recruitment Micro-Fee Trap*, *Brand Impersonation & Spoofing*, *Advance-Fee Financial Scam*, *Credential Harvesting & Phishing Link*, or *Commercial Course Upselling Spam*.
+
+### 4. Incident Investigation & Tri-Layer Explainability
+- **Alert Lifecycle States**: `OPEN` $\rightarrow$ `INVESTIGATING` $\rightarrow$ `RESOLVED` / `FALSE_POSITIVE` / `DISMISSED`.
+- **Tri-Layer Explainability Console**:
+  1. **Layer 1: IOC Threat Intelligence** — Tabular indicator inventory with defanged representations, source contexts, and reputation metadata.
+  2. **Layer 2: Security Rule Signals** — Handcrafted heuristic triggers (micro-fees, unverified portals, pressure triggers).
+  3. **Layer 3: ML Attribution & Consensus** — 8-model classifier decision matrix, Bayes log-odds decomposition, and token-level X-Ray attributions.
+- **Chronological Audit Event Timeline**: Immutable event log tracking `EMAIL_RECEIVED`, `ANALYSIS_STARTED`, `ANALYSIS_COMPLETED`, `IOC_EXTRACTED`, `THREAT_INTELLIGENCE_CHECKED`, `ALERT_CREATED`, `ALERT_UPDATED`, `FEEDBACK_SUBMITTED`, and `INCIDENT_RESOLVED`.
+- **Safe Continuous Learning Integration**: Analyst verdicts directly route into tenant-isolated feedback queues guarded by anti-poisoning validation gates without mutating active production model weights.
 
 ---
 

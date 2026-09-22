@@ -8,7 +8,6 @@ SYSTEM_PROMPT = "You are a Fake Job Detection AI trained on Indian job postings 
 random.seed(42)
 np.random.seed(42)
 
-# Indian Tier-1 & Tier-2 Tech & Industrial Hubs
 CITIES = [
     "Bangalore", "Bengaluru", "Hyderabad", "Pune", "Noida", "Gurugram", "Gurgaon",
     "Mumbai", "Chennai", "Delhi NCR", "Kolkata", "Ahmedabad", "Kochi", "Indore",
@@ -16,7 +15,6 @@ CITIES = [
     "Vadodara", "Lucknow", "Visakhapatnam", "Surat", "Mysore", "Bhopal"
 ]
 
-# Genuine Tech Roles with rich variety
 TECH_SPECS = [
     ("Frontend Developer", ["React.js", "Next.js", "TypeScript", "Tailwind CSS"], "3.5-7 LPA", "1-3 yrs"),
     ("Senior Frontend Engineer", ["React", "Redux Toolkit", "Webpack", "Performance Optimization", "Next.js"], "16-25 LPA", "4-7 yrs"),
@@ -36,7 +34,6 @@ TECH_SPECS = [
     ("Data Analyst", ["SQL", "PowerBI", "Tableau", "Python", "Data Modeling", "Excel"], "5-9 LPA", "1-3 yrs")
 ]
 
-# Genuine Non-Tech Roles
 NON_TECH_SPECS = [
     ("Business Development Executive (B2B)", "Outbound prospecting, CRM management, discovery calls, client pitches", "3.5-5.5 LPA + incentives", "0-2 yrs"),
     ("Senior Account Executive", "Enterprise sales cycle, solution pitching, contract negotiation, quota attainment", "10-18 LPA + OTE", "3-6 yrs"),
@@ -51,7 +48,6 @@ NON_TECH_SPECS = [
     ("Technical Recruiter", "Sourcing software engineers, candidate screening, compensation negotiation, ATS management", "5-9 LPA", "2-4 yrs")
 ]
 
-# Genuine Internships
 INTERNSHIP_SPECS = [
     ("Software Development Intern", "Python / Node.js or React basics, Git workflow", "INR 15,000 - 25,000 /month", "3-6 months"),
     ("Data Science & Analytics Intern", "Python, pandas, SQL, exploratory data analysis", "INR 18,000 - 28,000 /month", "6 months"),
@@ -63,7 +59,6 @@ INTERNSHIP_SPECS = [
     ("Operations Intern", "Data verification, partner onboarding, customer issue resolution", "INR 10,000 - 15,000 /month", "3 months")
 ]
 
-# Legitimate Companies, Domains, Portals
 LEGIT_COMPANIES = [
     ("Zeta Analytics Pvt Ltd", "zetaanalytics.com", "https://careers.zetaanalytics.com/jobs"),
     ("HyperScale Technologies", "hyperscale.tech", "https://jobs.lever.co/hyperscale-tech"),
@@ -179,7 +174,7 @@ def make_real_posting():
         ]
         text = random.choice(templates)
         
-    else: # referral / ATS direct
+    else:
         role, skills, ctc, exp = random.choice(TECH_SPECS)
         skill_str = ", ".join(random.sample(skills, 2))
         templates = [
@@ -208,7 +203,6 @@ def make_fake_posting():
     fake_url = random.choice(FAKE_URLS)
     city = random.choice(CITIES)
     
-    # 1. MICRO-FEE INTERNSHIP / DIGITAL ID CARD SCAM (SkillInfyTech archetype)
     if scam_type == "micro_fee_internship":
         fee = random.choice([89, 99, 149, 199, 249, 299, 399, 499])
         comp = random.choice(["SkillInfyTech IT Solutions", "CodeCraft Edutech", "NextGen Infotech Pvt Ltd", "ProSkills Tech Solutions", "AlphaTech Innovations"])
@@ -223,7 +217,6 @@ def make_fake_posting():
         ]
         text, resp = random.choice(templates)
 
-    # 2. BOOTCAMP MARKETING SPAM / FAKE URGENCY (ProPeers MAANG archetype)
     elif scam_type == "bootcamp_marketing_spam":
         discount = random.choice(["40%", "50%", "60%", "70%"])
         coupon = random.choice(["MAANG", "FAANG40", "SUPER50", "DISCOUNT60", "CAREER40"])
@@ -235,7 +228,6 @@ def make_fake_posting():
         ]
         text, resp = random.choice(templates)
 
-    # 3. COURSE UPSELL DISGUISED AS APPLICATION UPDATE (upGrad / Internshala archetype)
     elif scam_type == "course_upsell_scam":
         course_fee = random.choice(["₹91,000 + taxes", "₹75,000", "₹1,20,000", "₹65,000 + GST"])
         templates = [
@@ -246,7 +238,6 @@ def make_fake_posting():
         ]
         text, resp = random.choice(templates)
 
-    # 4. CAMPUS AMBASSADOR / UNSOLICITED APPLICATION ACCEPTANCE
     elif scam_type == "campus_ambassador_bait":
         templates = [
             (f"Subject: [Update] Your application has been accepted. We'd love to have you represent our company at your campus! As a student, you're uniquely positioned to promote our programs and earn certificates and rewards. Learn more and accept your role at {fake_url}.",
@@ -256,7 +247,6 @@ def make_fake_posting():
         ]
         text, resp = random.choice(templates)
 
-    # 5. FREE TRIAL BAIT & SWITCH
     elif scam_type == "free_trial_bait":
         templates = [
             (f"Subject: Get Your FREE Session Now. Hey Candidate, Still wondering if mentorship is worth it? Claim your Free 1:1 Trial Session with a real industry expert. Career roadmap, resume feedback, and mock interview prep. Only a few trial slots are left — and they're going fast. Claim Your Free Trial Session Now at {fake_url}.",
@@ -264,7 +254,6 @@ def make_fake_posting():
         ]
         text, resp = random.choice(templates)
 
-    # 6. ADVANCE FEE SCAMS
     elif scam_type == "advance_fee":
         fee = random.choice([350, 499, 750, 999, 1200, 1500, 1999, 2500, 3500])
         reason = random.choice([
@@ -286,7 +275,6 @@ def make_fake_posting():
         ]
         text, resp = random.choice(templates)
 
-    # 7. TELEGRAM / WHATSAPP TASK SCAMS
     elif scam_type == "telegram_task":
         daily_pay = random.choice(["2,500 - 5,000 daily", "3000 to 8000 INR per day", "1500 per 30 minutes", "5000 daily payout", "2000-4000/day"])
         task_desc = random.choice([
@@ -302,7 +290,6 @@ def make_fake_posting():
         ]
         text, resp = random.choice(templates)
 
-    # 8. BRAND SPOOF
     elif scam_type == "brand_spoof":
         role = random.choice(["Assistant Manager", "Operations Executive", "Branch Coordinator", "Software Associate"])
         salary = random.choice(["8-12 LPA", "55,000/month", "7.5 LPA", "60k per month"])
@@ -314,7 +301,6 @@ def make_fake_posting():
         ]
         text, resp = random.choice(templates)
 
-    # 9. TRAINING CERTIFICATION FEE SCAM
     elif scam_type == "training_cert":
         cert_fee = random.choice([1500, 1999, 2499, 3000, 4500, 5000])
         role = random.choice(["Data Analyst Trainee", "Python Developer Intern", "Digital Marketing Specialist"])
@@ -327,7 +313,6 @@ def make_fake_posting():
         ]
         text, resp = random.choice(templates)
 
-    # 10. NO INTERVIEW HIGH SALARY
     elif scam_type == "no_interview_high_salary":
         role = random.choice(["Data Entry Typist", "Email Processing Assistant", "SMS Dispatcher", "Online Form Filler"])
         salary = random.choice(["75,000 per month", "80k monthly", "15 LPA", "20,000 per week"])
@@ -339,7 +324,6 @@ def make_fake_posting():
         ]
         text, resp = random.choice(templates)
 
-    # 11. DATA ENTRY CAPTIVE / PENALTY TRAP
     elif scam_type == "data_entry_captive":
         deposit = random.choice([1000, 1500, 2000, 2500])
         penalty = random.choice(["5,000 INR", "10,000 INR", "legal notice", "court action"])
@@ -349,7 +333,6 @@ def make_fake_posting():
         ]
         text, resp = random.choice(templates)
 
-    # 12. VISA & AIRPORT SCAMS
     elif scam_type == "visa_airport":
         fee = random.choice([2500, 3500, 5000, 7500])
         templates = [
@@ -358,7 +341,6 @@ def make_fake_posting():
         ]
         text, resp = random.choice(templates)
 
-    # 13. PERSONAL / BANK HARVESTING
     elif scam_type == "personal_bank_harvest":
         templates = [
             (f"Job Posting: Selected for Back Office Executive role at {brand}. To release your salary account and joining kit, reply with Aadhaar, PAN, Netbanking credentials and OTP.",
@@ -366,7 +348,6 @@ def make_fake_posting():
         ]
         text, resp = random.choice(templates)
 
-    # 14. FAKE GOVT SCAM
     else:
         fee = random.choice([450, 750, 1100, 1500])
         templates = [
@@ -394,13 +375,11 @@ def generate_augmented_dataset(target_total=3200):
     num_to_add = target_total - len(records)
     print(f"Generating {num_to_add} new diverse records...")
     
-    # 60% fake (including new micro-fee & marketing archetypes), 40% real
     fake_target = int(num_to_add * 0.60)
     real_target = num_to_add - fake_target
     
     new_records = []
     
-    # Generate Fake records
     added_fake = 0
     attempts = 0
     while added_fake < fake_target and attempts < fake_target * 25:
@@ -412,7 +391,6 @@ def generate_augmented_dataset(target_total=3200):
             new_records.append(item)
             added_fake += 1
 
-    # Generate Real records
     added_real = 0
     attempts = 0
     while added_real < real_target and attempts < real_target * 25:
@@ -431,10 +409,8 @@ def generate_augmented_dataset(target_total=3200):
     
     df_augmented = pd.DataFrame(combined_records)
     
-    # Drop any duplicate user prompts
     df_augmented = df_augmented.drop_duplicates(subset=['user']).reset_index(drop=True)
     
-    # Save outputs in multiple standard formats
     df_augmented.to_parquet('smolified_fakejob_expanded.parquet', index=False)
     df_augmented.to_csv('smolified_fakejob_expanded.csv', index=False)
     df_augmented.to_json('smolified_fakejob_expanded.jsonl', orient='records', lines=True)

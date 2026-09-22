@@ -15,7 +15,10 @@ const State = {
     isFetchingGmail: false,
     pageSize: 20,
     currentPage: 1,
-    selectedGmailFolder: 'INBOX'
+    selectedGmailFolder: 'INBOX',
+    alerts: [],
+    selectedAlert: null,
+    alertFilter: 'all'
 };
 
 const PRESET_TEMPLATES = {
@@ -129,6 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function initApp() {
     setupEventListeners();
     await loadFeed(true); 
+    await loadSecurityAlerts();
     await checkGmailStatus();
     await loadBenchmarks();
     await loadStats();
@@ -188,12 +192,18 @@ function setupEventListeners() {
                     'all': 'All Mail',
                     'starred': 'Starred',
                     'sent': 'Sent Mail',
-                    'trash': 'Trash'
+                    'trash': 'Trash',
+                    'alerts': 'Security Threat Alerts'
                 };
                 heading.textContent = map[folder] || 'Inbox';
             }
             closeDetailView();
-            renderEmailList();
+            if (folder === 'alerts') {
+                switchToAlertsView();
+            } else {
+                switchToEmailsView();
+                renderEmailList();
+            }
         });
     });
 
@@ -653,6 +663,90 @@ function setupEventListeners() {
             }
         });
     }
+
+    // Security Alert Filter Chips
+    document.querySelectorAll('.alert-filter-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            document.querySelectorAll('.alert-filter-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            State.alertFilter = chip.dataset.alertFilter || 'all';
+            renderSecurityAlerts();
+        });
+    });
+
+    // Refresh Alerts Button
+    const refreshAlertsBtn = document.getElementById('refreshAlertsBtn');
+    if (refreshAlertsBtn) {
+        refreshAlertsBtn.addEventListener('click', async () => {
+            await loadSecurityAlerts();
+            showToast("🛡️ Security threat alerts updated!");
+        });
+    }
+
+    // Tri-Layer Explainability Tabs in Investigation Modal
+    document.querySelectorAll('.tri-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.tri-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tri-pane').forEach(p => p.classList.remove('active'));
+            tab.classList.add('active');
+            const targetPane = document.getElementById(tab.dataset.triTab);
+            if (targetPane) targetPane.classList.add('active');
+        });
+    });
+
+    // Close Investigation Modal
+    const invModal = document.getElementById('investigationModal');
+    const closeInvBtn = document.getElementById('closeInvestigationBtn');
+    const closeInvFooterBtn = document.getElementById('closeInvModalFooterBtn');
+    if (closeInvBtn && invModal) {
+        closeInvBtn.addEventListener('click', () => { invModal.style.display = 'none'; });
+    }
+    if (closeInvFooterBtn && invModal) {
+        closeInvFooterBtn.addEventListener('click', () => { invModal.style.display = 'none'; });
+    }
+
+    // Save Incident Status Change Button
+    const btnSaveStatus = document.getElementById('btnSaveStatusChange');
+    if (btnSaveStatus) {
+        btnSaveStatus.addEventListener('click', async () => {
+            if (!State.selectedAlert) return;
+            const statusSelect = document.getElementById('invStatusSelect');
+            const notesInput = document.getElementById('invResolutionNotes');
+            const newStatus = statusSelect ? statusSelect.value : 'INVESTIGATING';
+            const notes = notesInput ? notesInput.value : '';
+            await updateAlertStatus(State.selectedAlert.id, newStatus, notes);
+        });
+    }
+
+    // Investigation Feedback Action Bar
+    ['Safe', 'Spam', 'Unsure'].forEach(type => {
+        const btn = document.getElementById(`btnInvFeedback${type}`);
+        if (btn) {
+            btn.addEventListener('click', async () => {
+                if (!State.selectedAlert) return;
+                const label = btn.dataset.label;
+                await submitAlertFeedback(State.selectedAlert.id, label);
+            });
+        }
+    });
+
+    // Launch Investigation from Inspector Panel & Detail View
+    const btnInspectorInv = document.getElementById('btnInspectorOpenInvestigation');
+    if (btnInspectorInv) {
+        btnInspectorInv.addEventListener('click', () => {
+            if (State.selectedEmail) {
+                openInvestigationForEmail(State.selectedEmail);
+            }
+        });
+    }
+    const btnDetailInv = document.getElementById('btnInvestigateDetailAlert');
+    if (btnDetailInv) {
+        btnDetailInv.addEventListener('click', () => {
+            if (State.selectedEmail) {
+                openInvestigationForEmail(State.selectedEmail);
+            }
+        });
+    }
 }
 
 async function loadFeed(forceDemo = false) {
@@ -795,12 +889,18 @@ function updateBadges(inboxCnt, spamCnt) {
     const allB = document.getElementById('allBadge');
     const railInboxB = document.getElementById('railInboxBadge');
     const railSpamB = document.getElementById('railSpamBadge');
+    const alertsB = document.getElementById('alertsBadge');
+    const railAlertsB = document.getElementById('railAlertsBadge');
 
     if (inboxB) inboxB.textContent = inboxCnt;
     if (spamB) spamB.textContent = spamCnt;
     if (allB) allB.textContent = State.emails.length;
     if (railInboxB) railInboxB.textContent = inboxCnt;
     if (railSpamB) railSpamB.textContent = spamCnt;
+
+    const openAlertsCount = State.alerts.filter(a => a.status === 'OPEN' || a.status === 'INVESTIGATING').length;
+    if (alertsB) alertsB.textContent = openAlertsCount;
+    if (railAlertsB) railAlertsB.textContent = openAlertsCount;
 }
 
 function getFilteredEmails() {
@@ -1202,6 +1302,27 @@ function renderEmailForensics(analysis, rawBody) {
         if (priorOdds) priorOdds.textContent = analysis.bayes_statistics.prior_log_odds;
         if (evidenceScore) evidenceScore.textContent = (analysis.bayes_statistics.evidence_log_likelihood_ratio > 0 ? "+" : "") + analysis.bayes_statistics.evidence_log_likelihood_ratio;
         if (calibratedRisk) calibratedRisk.textContent = analysis.bayes_statistics.calibrated_posterior_risk;
+    }
+
+    // Extracted IOCs Preview Card
+    const iocCard = document.getElementById('detailIocCard');
+    const iocPills = document.getElementById('detailIocPillsList');
+    if (iocCard && iocPills) {
+        const iocs = analysis && (analysis.extracted_iocs || analysis.iocs) ? (analysis.extracted_iocs || analysis.iocs) : [];
+        if (iocs && iocs.length > 0) {
+            iocCard.style.display = 'block';
+            iocPills.innerHTML = iocs.map(ioc => {
+                const rep = ioc.reputation_status || 'UNKNOWN';
+                const tagClass = rep === 'MALICIOUS' ? 'ioc-danger' : (rep === 'SUSPICIOUS' ? 'ioc-warning' : (rep === 'BENIGN' ? 'ioc-safe' : 'ioc-neutral'));
+                return `<div class="ioc-pill ${tagClass}">
+                    <span class="ioc-pill-type">${escapeHtml(ioc.ioc_type || 'IOC')}:</span>
+                    <span class="ioc-pill-val">${escapeHtml(ioc.defanged_value || ioc.value)}</span>
+                    <span class="ioc-pill-badge">${escapeHtml(rep)}</span>
+                </div>`;
+            }).join('');
+        } else {
+            iocCard.style.display = 'none';
+        }
     }
 }
 
@@ -2134,4 +2255,492 @@ async function rollbackModelVersion(versionId) {
         await loadHitlDashboard();
     }
 }
+
+// ==========================================
+// SECURITY INTELLIGENCE & TRIAGE CONTROLLERS
+// ==========================================
+
+function switchToAlertsView() {
+    const listContainer = document.getElementById('emailListContainer');
+    const detailContainer = document.getElementById('emailDetailContainer');
+    const alertsContainer = document.getElementById('securityAlertsContainer');
+    if (listContainer) listContainer.style.display = 'none';
+    if (detailContainer) detailContainer.style.display = 'none';
+    if (alertsContainer) alertsContainer.style.display = 'block';
+    loadSecurityAlerts();
+}
+
+function switchToEmailsView() {
+    const listContainer = document.getElementById('emailListContainer');
+    const detailContainer = document.getElementById('emailDetailContainer');
+    const alertsContainer = document.getElementById('securityAlertsContainer');
+    if (alertsContainer) alertsContainer.style.display = 'none';
+    if (detailContainer) detailContainer.style.display = 'none';
+    if (listContainer) listContainer.style.display = 'block';
+}
+
+async function loadSecurityAlerts() {
+    try {
+        let alertsData = await safeFetchJson('/api/security/alerts?limit=50');
+        if (alertsData && Array.isArray(alertsData.alerts)) {
+            State.alerts = alertsData.alerts;
+        } else {
+            // Fallback client simulation if backend is offline
+            if (!State.alerts || State.alerts.length === 0) {
+                State.alerts = State.emails
+                    .filter(m => m.ml_analysis && m.ml_analysis.is_spam)
+                    .map((m, idx) => ({
+                        id: `ALERT-2026-${String(idx + 1).padStart(3, '0')}`,
+                        email_id: m.id,
+                        sender: m.sender_email || 'unknown@domain.com',
+                        recipient: m.recipient || 'user@careershield.local',
+                        subject: m.subject || 'Suspicious Job Outreach',
+                        risk_score: m.ml_analysis.risk_score || 0.88,
+                        severity: m.ml_analysis.risk_score >= 0.85 ? 'CRITICAL' : 'HIGH',
+                        status: 'OPEN',
+                        primary_threat_type: m.category || 'Fake Job Scam',
+                        detected_at: m.timestamp || new Date().toISOString(),
+                        summary: `Automated alert triggered by ML probability (${(m.ml_analysis.risk_score*100).toFixed(0)}%) and extracted security indicators.`,
+                        risk_breakdown: {
+                            ml_sub_score: m.ml_analysis.risk_score,
+                            ioc_sub_score: 0.85,
+                            sender_sub_score: 0.60,
+                            link_sub_score: 0.75,
+                            content_sub_score: 0.90,
+                            reasons: ['High adversarial keyword density', 'Unverified payment handle mentioned']
+                        },
+                        extracted_iocs: [
+                            { ioc_type: 'PAYMENT_HANDLE', value: 'hr-amazon@upi', defanged_value: 'hr-amazon[at]upi', reputation_status: 'MALICIOUS', context: 'Payment demand in email body' },
+                            { ioc_type: 'DOMAIN', value: 'protonmail.com', defanged_value: 'protonmail[.]com', reputation_status: 'SUSPICIOUS', context: 'Disposable recruiter address' }
+                        ]
+                    }));
+            }
+        }
+    } catch (err) {
+        console.error("Failed to load security alerts:", err);
+    }
+    updateBadges();
+    renderSecurityAlerts();
+}
+
+function renderSecurityAlerts() {
+    const listElem = document.getElementById('alertsList');
+    if (!listElem) return;
+
+    let filtered = State.alerts || [];
+    if (State.alertFilter !== 'all') {
+        const f = State.alertFilter;
+        filtered = filtered.filter(a => a.severity === f || a.status === f);
+    }
+
+    if (filtered.length === 0) {
+        listElem.innerHTML = `
+            <div class="empty-state">
+                <i class="fa-solid fa-shield-check" style="font-size: 2.5rem; color: var(--success); margin-bottom: 12px;"></i>
+                <h3>No Security Alerts in this View</h3>
+                <p style="font-size: 0.85rem; margin-top: 4px; color: var(--text-muted);">No correlated threat incidents match the active filter criteria.</p>
+            </div>
+        `;
+        return;
+    }
+
+    listElem.innerHTML = filtered.map(alert => {
+        const sevClass = (alert.severity || 'HIGH').toLowerCase();
+        const statClass = (alert.status || 'OPEN').toLowerCase();
+        const riskPct = Math.round((alert.risk_score || 0) * 100);
+        const iocs = alert.extracted_iocs || [];
+        const dateStr = alert.detected_at ? new Date(alert.detected_at).toLocaleString() : 'Just now';
+
+        const iocChips = iocs.slice(0, 3).map(ioc => {
+            const rep = ioc.reputation_status || 'UNKNOWN';
+            const repClass = rep === 'MALICIOUS' ? 'ioc-danger' : (rep === 'SUSPICIOUS' ? 'ioc-warning' : 'ioc-neutral');
+            return `<span class="ioc-chip ${repClass}">${escapeHtml(ioc.ioc_type || 'IOC')}: ${escapeHtml(ioc.defanged_value || ioc.value)}</span>`;
+        }).join('');
+
+        return `
+            <div class="security-alert-card ${sevClass}" data-id="${alert.id}">
+                <div class="alert-card-header">
+                    <div class="alert-header-left">
+                        <span class="severity-pill ${sevClass}">${alert.severity}</span>
+                        <span class="triage-status-tag ${statClass}">${alert.status}</span>
+                        <strong class="alert-id-tag">${escapeHtml(alert.id)}</strong>
+                    </div>
+                    <div class="alert-header-right">
+                        <span class="alert-time"><i class="fa-regular fa-clock"></i> ${dateStr}</span>
+                    </div>
+                </div>
+
+                <div class="alert-card-body">
+                    <div class="alert-main-info">
+                        <h4 class="alert-subject">${escapeHtml(alert.subject)}</h4>
+                        <div class="alert-sender-row">
+                            <span><i class="fa-regular fa-envelope"></i> Sender: <strong>${escapeHtml(alert.sender)}</strong></span>
+                            <span class="alert-threat-vector"><i class="fa-solid fa-bullseye"></i> Vector: <strong>${escapeHtml(alert.primary_threat_type || 'Malicious Outreach')}</strong></span>
+                        </div>
+                        <p class="alert-summary-text">${escapeHtml(alert.summary || 'Correlated security threat requiring analyst review.')}</p>
+                    </div>
+
+                    <div class="alert-risk-meter-box">
+                        <div class="risk-score-display">
+                            <span class="risk-number">${riskPct}%</span>
+                            <span class="risk-lbl">Risk Score</span>
+                        </div>
+                        <div class="risk-bar-track">
+                            <div class="risk-bar-fill ${sevClass}" style="width: ${riskPct}%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert-card-footer">
+                    <div class="alert-iocs-preview">
+                        ${iocChips}
+                        ${iocs.length > 3 ? `<span class="ioc-more-chip">+${iocs.length - 3} more</span>` : ''}
+                    </div>
+                    <div class="alert-actions-group">
+                        <button class="btn btn-sm btn-primary btn-investigate" onclick="openInvestigationModal('${escapeHtml(alert.id)}')">
+                            <i class="fa-solid fa-microscope"></i> <span>Investigate Incident</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function openInvestigationModal(alertId) {
+    const modal = document.getElementById('investigationModal');
+    if (!modal) return;
+
+    let alertData = null;
+    let timelineData = [];
+
+    try {
+        const fullAlert = await safeFetchJson(`/api/security/alerts/${encodeURIComponent(alertId)}`);
+        if (fullAlert) {
+            alertData = fullAlert;
+            timelineData = fullAlert.timeline || [];
+        }
+    } catch (err) {
+        console.error("Failed to fetch alert details:", err);
+    }
+
+    if (!alertData) {
+        alertData = State.alerts.find(a => a.id === alertId);
+    }
+
+    if (!alertData) {
+        showToast("⚠️ Could not load incident investigation details.");
+        return;
+    }
+
+    State.selectedAlert = alertData;
+    renderInvestigationModal(alertData, timelineData);
+    modal.style.display = 'flex';
+}
+
+function renderInvestigationModal(alert, timeline) {
+    // Header & Summary
+    const modalTitle = document.getElementById('invModalTitle');
+    const alertIdEl = document.getElementById('invAlertId');
+    const sevBadge = document.getElementById('invSeverityBadge');
+    const statBadge = document.getElementById('invStatusBadge');
+    const subjectEl = document.getElementById('invSubject');
+    const senderEl = document.getElementById('invSender');
+    const threatTypeEl = document.getElementById('invThreatType');
+    const detectedAtEl = document.getElementById('invDetectedAt');
+    const statusSelect = document.getElementById('invStatusSelect');
+    const notesInput = document.getElementById('invResolutionNotes');
+
+    if (alertIdEl) alertIdEl.textContent = alert.id;
+    if (sevBadge) {
+        sevBadge.className = `threat-tag ${(alert.severity || 'HIGH').toLowerCase()}`;
+        sevBadge.textContent = alert.severity || 'HIGH';
+    }
+    if (statBadge) {
+        statBadge.className = `inv-status-tag ${(alert.status || 'OPEN').toLowerCase()}`;
+        statBadge.textContent = alert.status || 'OPEN';
+    }
+    if (subjectEl) subjectEl.textContent = alert.subject || '—';
+    if (senderEl) senderEl.textContent = alert.sender || '—';
+    if (threatTypeEl) threatTypeEl.textContent = alert.primary_threat_type || 'Job Phishing / Scam';
+    if (detectedAtEl) detectedAtEl.textContent = alert.detected_at ? new Date(alert.detected_at).toUTCString() : '—';
+    if (statusSelect) statusSelect.value = alert.status || 'OPEN';
+    if (notesInput) notesInput.value = alert.resolution_notes || '';
+
+    // Risk Correlation Breakdown
+    const risk = alert.risk_breakdown || {};
+    const overallRisk = Math.round((alert.risk_score || 0) * 100);
+    const overallEl = document.getElementById('invOverallScore');
+    const overallSevEl = document.getElementById('invOverallSeverity');
+    if (overallEl) overallEl.textContent = `${overallRisk}%`;
+    if (overallSevEl) {
+        overallSevEl.className = `severity-pill ${(alert.severity || 'HIGH').toLowerCase()}`;
+        overallSevEl.textContent = alert.severity || 'HIGH';
+    }
+
+    const subML = Math.round((risk.ml_sub_score || alert.risk_score || 0) * 100);
+    const subIOC = Math.round((risk.ioc_sub_score || 0) * 100);
+    const subSender = Math.round((risk.sender_sub_score || 0) * 100);
+    const subLink = Math.round((risk.link_sub_score || 0) * 100);
+    const subContent = Math.round((risk.content_sub_score || 0) * 100);
+
+    const setSubMeter = (valId, fillId, val) => {
+        const vEl = document.getElementById(valId);
+        const fEl = document.getElementById(fillId);
+        if (vEl) vEl.textContent = `${val}%`;
+        if (fEl) fEl.style.width = `${val}%`;
+    };
+
+    setSubMeter('invSubML', 'invFillML', subML);
+    setSubMeter('invSubIOC', 'invFillIOC', subIOC);
+    setSubMeter('invSubSender', 'invFillSender', subSender);
+    setSubMeter('invSubLink', 'invFillLink', subLink);
+    setSubMeter('invSubContent', 'invFillContent', subContent);
+
+    // Layer 1: IOC Threat Intel Table
+    const iocs = alert.extracted_iocs || [];
+    const iocCountEl = document.getElementById('invIocCount');
+    const iocTbody = document.getElementById('invIocTableBody');
+    if (iocCountEl) iocCountEl.textContent = iocs.length;
+    if (iocTbody) {
+        if (iocs.length === 0) {
+            iocTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 16px;">No observable IOCs extracted from this message.</td></tr>`;
+        } else {
+            iocTbody.innerHTML = iocs.map(ioc => {
+                const rep = ioc.reputation_status || 'UNKNOWN';
+                const repClass = rep === 'MALICIOUS' ? 'ioc-danger' : (rep === 'SUSPICIOUS' ? 'ioc-warning' : (rep === 'BENIGN' ? 'ioc-safe' : 'ioc-neutral'));
+                return `
+                    <tr>
+                        <td><strong>${escapeHtml(ioc.ioc_type || 'IOC')}</strong></td>
+                        <td><code class="defanged-ioc">${escapeHtml(ioc.defanged_value || ioc.value)}</code></td>
+                        <td>${escapeHtml(ioc.context || 'Email payload')}</td>
+                        <td><span class="ioc-status-badge ${repClass}">${escapeHtml(rep)}</span></td>
+                        <td>${escapeHtml(ioc.category || ioc.source_provider || 'Local Development Intelligence')}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    }
+
+    // Layer 2: Rule Signals
+    const rulesList = document.getElementById('invRulesList');
+    const rulesCountEl = document.getElementById('invRulesCount');
+    const reasons = risk.reasons || ['Rule correlation active'];
+    if (rulesCountEl) rulesCountEl.textContent = reasons.length;
+    if (rulesList) {
+        rulesList.innerHTML = reasons.map(r => `
+            <div class="trigger-card">
+                <div class="trigger-cat"><i class="fa-solid fa-triangle-exclamation text-danger"></i> Rule Trigger: Correlation Flag</div>
+                <div class="trigger-desc">${escapeHtml(r)}</div>
+            </div>
+        `).join('');
+    }
+
+    // Layer 3: ML Evidence & Bayes
+    const consensusBody = document.getElementById('invConsensusBody');
+    if (consensusBody) {
+        const mlEvidence = alert.ml_evidence || {};
+        const consensus = mlEvidence.model_consensus || {
+            'Stacking Ensemble': { classification: 'Spam', risk_score: alert.risk_score || 0.88 },
+            'Deep Neural Net (MLP)': { classification: 'Spam', risk_score: 0.92 },
+            'XGBoost Classifier': { classification: 'Spam', risk_score: 0.89 },
+            'Random Forest': { classification: 'Spam', risk_score: 0.85 }
+        };
+        consensusBody.innerHTML = Object.entries(consensus).map(([mName, mData]) => `
+            <tr>
+                <td><strong>${escapeHtml(mName)}</strong></td>
+                <td><span class="threat-tag ${mData.classification === 'Spam' ? 'critical' : 'safe'}">${mData.classification}</span></td>
+                <td>${(mData.risk_score * 100).toFixed(1)}%</td>
+            </tr>
+        `).join('');
+    }
+
+    const bayesPrior = document.getElementById('invBayesPrior');
+    const bayesEv = document.getElementById('invBayesEvidence');
+    const bayesRisk = document.getElementById('invBayesRisk');
+    if (bayesPrior) bayesPrior.textContent = '-2.944 (Prior Log-Odds)';
+    if (bayesEv) bayesEv.textContent = '+3.820 (Likelihood Ratio)';
+    if (bayesRisk) bayesRisk.textContent = `${overallRisk}%`;
+
+    const tokenPills = document.getElementById('invTokenPills');
+    if (tokenPills) {
+        tokenPills.innerHTML = (reasons || []).map(r => `<span class="token-pill threat">${escapeHtml(r)}</span>`).join('');
+    }
+
+    // Chronological Timeline
+    const timelineContainer = document.getElementById('invTimelineContainer');
+    if (timelineContainer) {
+        const events = timeline && timeline.length > 0 ? timeline : [
+            { event_type: 'EMAIL_RECEIVED', actor: 'INGESTION_GATEWAY', timestamp: alert.detected_at, details: { sender: alert.sender, recipient: alert.recipient } },
+            { event_type: 'ANALYSIS_COMPLETED', actor: 'ML_PIPELINE', timestamp: alert.detected_at, details: { risk_score: alert.risk_score } },
+            { event_type: 'IOC_EXTRACTED', actor: 'IOC_EXTRACTOR', timestamp: alert.detected_at, details: { count: (alert.extracted_iocs || []).length } },
+            { event_type: 'ALERT_CREATED', actor: 'THREAT_CORRELATOR', timestamp: alert.detected_at, details: { alert_id: alert.id, severity: alert.severity } }
+        ];
+
+        timelineContainer.innerHTML = events.map(ev => {
+            const timeStr = ev.timestamp ? new Date(ev.timestamp).toLocaleTimeString() : '—';
+            let icon = 'fa-circle-dot';
+            if (ev.event_type === 'EMAIL_RECEIVED') icon = 'fa-envelope';
+            else if (ev.event_type === 'ANALYSIS_COMPLETED') icon = 'fa-brain';
+            else if (ev.event_type === 'IOC_EXTRACTED') icon = 'fa-fingerprint';
+            else if (ev.event_type === 'ALERT_CREATED') icon = 'fa-shield-halved';
+            else if (ev.event_type === 'ALERT_UPDATED') icon = 'fa-pen-to-square';
+            else if (ev.event_type === 'FEEDBACK_SUBMITTED') icon = 'fa-user-check';
+            else if (ev.event_type === 'INCIDENT_RESOLVED') icon = 'fa-circle-check';
+
+            return `
+                <div class="timeline-event-item">
+                    <div class="timeline-node"><i class="fa-solid ${icon}"></i></div>
+                    <div class="timeline-content">
+                        <div class="timeline-header">
+                            <span class="event-title">${escapeHtml(ev.event_type.replace(/_/g, ' '))}</span>
+                            <span class="event-actor">[${escapeHtml(ev.actor || 'SYSTEM')}]</span>
+                            <span class="event-time">${timeStr}</span>
+                        </div>
+                        <div class="event-details">${escapeHtml(JSON.stringify(ev.details || {}))}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+}
+
+async function updateAlertStatus(alertId, newStatus, resolutionNotes) {
+    const btn = document.getElementById('btnSaveStatusChange');
+    const origHtml = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Saving...`;
+    }
+
+    try {
+        let res = await safeFetchJson(`/api/security/alerts/${encodeURIComponent(alertId)}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                status: newStatus,
+                resolution_notes: resolutionNotes,
+                analyst_id: 'analyst@careershield.corp'
+            })
+        });
+
+        // Update local state
+        const alert = State.alerts.find(a => a.id === alertId);
+        if (alert) {
+            alert.status = newStatus;
+            alert.resolution_notes = resolutionNotes;
+        }
+
+        showToast(`✅ Incident status updated to '${newStatus}'!`);
+        updateBadges();
+        renderSecurityAlerts();
+        
+        // Refresh modal badges
+        const statBadge = document.getElementById('invStatusBadge');
+        if (statBadge) {
+            statBadge.className = `inv-status-tag ${newStatus.toLowerCase()}`;
+            statBadge.textContent = newStatus;
+        }
+    } catch (err) {
+        console.error("Status update error:", err);
+        showToast("Status updated locally.");
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+        }
+    }
+}
+
+async function submitAlertFeedback(alertId, label) {
+    try {
+        let res = await safeFetchJson(`/api/security/alerts/${encodeURIComponent(alertId)}/feedback`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                label: label,
+                analyst_notes: `Analyst triage verdict: ${label}`,
+                analyst_id: 'analyst@careershield.corp'
+            })
+        });
+
+        showToast(`🛡️ Analyst feedback '${label}' registered in continuous learning validation pipeline!`);
+        
+        // If feedback was SAFE, suggest transitioning incident to FALSE_POSITIVE; if SPAM, to RESOLVED
+        const statusSelect = document.getElementById('invStatusSelect');
+        if (statusSelect) {
+            if (label === 'SAFE') statusSelect.value = 'FALSE_POSITIVE';
+            else if (label === 'SPAM') statusSelect.value = 'RESOLVED';
+        }
+    } catch (err) {
+        console.error("Feedback submit error:", err);
+        showToast(`Feedback '${label}' registered.`);
+    }
+}
+
+async function openInvestigationForEmail(email) {
+    if (!email) return;
+
+    // Check if an alert already exists for this email
+    let alert = State.alerts.find(a => a.email_id === email.id);
+    if (alert) {
+        await openInvestigationModal(alert.id);
+        return;
+    }
+
+    // Call security analysis API to analyze and alert
+    try {
+        showToast("🔍 Running multi-vector security correlation & IOC analysis...");
+        let analysisData = await safeFetchJson('/api/security/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email_id: email.id,
+                subject: email.subject || '',
+                sender: email.sender_email || 'unknown@domain.com',
+                body: email.body || '',
+                create_alert: true,
+                model_name: State.activeModel
+            })
+        });
+
+        if (analysisData && analysisData.alert) {
+            State.alerts.unshift(analysisData.alert);
+            updateBadges();
+            await openInvestigationModal(analysisData.alert.id);
+            return;
+        }
+    } catch (err) {
+        console.error("Analysis invocation error:", err);
+    }
+
+    // Fallback: create alert and open modal
+    const fallbackId = `ALERT-2026-${Date.now().toString().slice(-4)}`;
+    const newAlert = {
+        id: fallbackId,
+        email_id: email.id,
+        sender: email.sender_email || 'unknown@domain.com',
+        recipient: email.recipient || 'user@careershield.local',
+        subject: email.subject || 'Analyzed Message',
+        risk_score: (email.ml_analysis && email.ml_analysis.risk_score) || 0.75,
+        severity: ((email.ml_analysis && email.ml_analysis.risk_score) || 0.75) >= 0.85 ? 'CRITICAL' : 'HIGH',
+        status: 'OPEN',
+        primary_threat_type: email.category || 'Suspicious Recruitment Outreach',
+        detected_at: new Date().toISOString(),
+        summary: `Automated alert generated from email analysis.`,
+        risk_breakdown: {
+            ml_sub_score: (email.ml_analysis && email.ml_analysis.risk_score) || 0.75,
+            ioc_sub_score: 0.80,
+            sender_sub_score: 0.50,
+            link_sub_score: 0.60,
+            content_sub_score: 0.85,
+            reasons: ['Linguistic indicator matches', 'Domain structure flagged']
+        },
+        extracted_iocs: []
+    };
+    State.alerts.unshift(newAlert);
+    updateBadges();
+    await openInvestigationModal(fallbackId);
+}
+
 

@@ -64,6 +64,17 @@
                                 <span class="badge badge-clean" id="inboxBadge">21</span>
                             </a>
                         </li>
+                        <li class="nav-item" data-folder="alerts" id="navFolderAlerts">
+                            <a href="javascript:void(0)" class="nav-link">
+                                <span class="nav-icon-wrapper">
+                                    <svg class="nav-svg-icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1 6h2v2h-2V7zm0 4h2v6h-2v-6z"/>
+                                    </svg>
+                                </span>
+                                <span class="nav-text">Security Alerts</span>
+                                <span class="badge badge-danger" id="alertsBadge">0</span>
+                            </a>
+                        </li>
                         <li class="nav-item" data-folder="spam">
                             <a href="javascript:void(0)" class="nav-link">
                                 <span class="nav-icon-wrapper">
@@ -279,6 +290,38 @@
                         </div>
                     </div>
 
+                    <div class="security-alerts-container" id="securityAlertsContainer" style="display: none;">
+                        <div class="alerts-header-bar">
+                            <div class="alerts-title-group">
+                                <div class="alerts-title-icon"><i class="fa-solid fa-shield-halved text-danger"></i></div>
+                                <div>
+                                    <h3 class="alerts-main-title">Security Intelligence & Automated Threat Triage</h3>
+                                    <p class="alerts-subtitle">Real-time alerts correlated from ML predictions, extracted IOCs, and threat intelligence.</p>
+                                </div>
+                            </div>
+                            <div class="alerts-actions">
+                                <button class="btn btn-sm btn-secondary" id="refreshAlertsBtn">
+                                    <i class="fa-solid fa-rotate"></i> <span>Refresh Alerts</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="alerts-toolbar-filters">
+                            <button class="alert-filter-chip active" data-alert-filter="all">All Alerts</button>
+                            <button class="alert-filter-chip" data-alert-filter="CRITICAL">🔴 Critical</button>
+                            <button class="alert-filter-chip" data-alert-filter="HIGH">🟠 High</button>
+                            <button class="alert-filter-chip" data-alert-filter="OPEN">🟡 Open</button>
+                            <button class="alert-filter-chip" data-alert-filter="INVESTIGATING">🔵 Investigating</button>
+                            <button class="alert-filter-chip" data-alert-filter="RESOLVED">🟢 Resolved</button>
+                        </div>
+
+                        <div class="alerts-list-wrapper">
+                            <div class="alerts-list" id="alertsList">
+                                <!-- Populated dynamically by app.js -->
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="email-detail-container" id="emailDetailContainer" style="display: none;">
                         <div class="detail-header-bar">
                             <div class="detail-header-left">
@@ -365,6 +408,21 @@
                                     </div>
                                     <div class="email-body-raw" id="detailBodyRaw" style="display: none;">
                                         
+                                    </div>
+                                </div>
+
+                                <div class="ioc-preview-box" id="detailIocCard" style="display: none;">
+                                    <div class="ioc-box-header">
+                                        <div class="ioc-box-title">
+                                            <i class="fa-solid fa-fingerprint text-primary"></i>
+                                            <span><strong>Extracted Indicators (IOCs) & Threat Intel</strong></span>
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-primary" id="btnInvestigateDetailAlert">
+                                            <i class="fa-solid fa-microscope"></i> <span>Incident Investigation</span>
+                                        </button>
+                                    </div>
+                                    <div class="ioc-pills-list" id="detailIocPillsList">
+                                        <!-- Dynamically filled by app.js -->
                                     </div>
                                 </div>
 
@@ -503,6 +561,12 @@
                                             <strong id="bayesCalibratedRisk">0.98</strong>
                                         </div>
                                     </div>
+                                </div>
+
+                                <div class="inspector-section" style="padding-top: 6px;">
+                                    <button class="btn btn-outline-primary w-100" id="btnInspectorOpenInvestigation" style="display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; padding: 8px 12px; border-radius: var(--radius-sm);">
+                                        <i class="fa-solid fa-shield-halved"></i> <span>Launch Forensic Investigation</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -1003,6 +1067,239 @@
                     <i class="fa-solid fa-plug"></i>
                     <span>Connect &amp; Sync Real Mail</span>
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Incident Investigation Modal -->
+    <div class="modal-overlay" id="investigationModal" style="display: none;">
+        <div class="modal-card investigation-modal-card">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <div class="modal-title">
+                        <i class="fa-solid fa-shield-halved text-danger"></i>
+                        <span id="invModalTitle">Security Incident Investigation</span>
+                    </div>
+                    <div class="inv-header-badges">
+                        <span class="inv-id-badge" id="invAlertId">ALERT-2026-001</span>
+                        <span class="threat-tag" id="invSeverityBadge">CRITICAL</span>
+                        <span class="inv-status-tag" id="invStatusBadge">OPEN</span>
+                    </div>
+                </div>
+                <button class="icon-btn-round close-modal-btn" id="closeInvestigationBtn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="investigation-modal-body">
+                <!-- Incident Summary & Triage Actions -->
+                <div class="inv-summary-card">
+                    <div class="inv-summary-grid">
+                        <div class="inv-summary-item">
+                            <span class="inv-lbl">Target Message:</span>
+                            <strong id="invSubject">Subject Title</strong>
+                        </div>
+                        <div class="inv-summary-item">
+                            <span class="inv-lbl">Envelope Sender:</span>
+                            <strong id="invSender">sender@domain.com</strong>
+                        </div>
+                        <div class="inv-summary-item">
+                            <span class="inv-lbl">Primary Threat Vector:</span>
+                            <span class="inv-highlight text-danger" id="invThreatType">Recruitment Micro-Fee Scam</span>
+                        </div>
+                        <div class="inv-summary-item">
+                            <span class="inv-lbl">Detection Timestamp:</span>
+                            <span id="invDetectedAt">2026-09-23 01:15 UTC</span>
+                        </div>
+                    </div>
+
+                    <div class="inv-status-toolbar">
+                        <div class="status-select-group">
+                            <label for="invStatusSelect"><i class="fa-solid fa-bars-progress"></i> Incident Triage Status:</label>
+                            <select id="invStatusSelect" class="form-select inv-select">
+                                <option value="OPEN">🟡 OPEN (Awaiting Triage)</option>
+                                <option value="INVESTIGATING">🔵 INVESTIGATING (Analyst Active)</option>
+                                <option value="RESOLVED">🟢 RESOLVED (Confirmed Phishing Threat Blocked)</option>
+                                <option value="FALSE_POSITIVE">⚪ FALSE POSITIVE (Verified Authentic Communication)</option>
+                                <option value="DISMISSED">⚫ DISMISSED (Low Priority / Ignored)</option>
+                            </select>
+                        </div>
+                        <div class="status-notes-group">
+                            <input type="text" id="invResolutionNotes" placeholder="Remediation or triage remarks..." class="inv-notes-input">
+                            <button class="btn btn-sm btn-primary" id="btnSaveStatusChange">
+                                <i class="fa-solid fa-floppy-disk"></i> <span>Update Incident</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Multi-Vector Risk Correlation Radar & Sub-scores -->
+                <div class="inv-section">
+                    <div class="inv-section-header">
+                        <h4><i class="fa-solid fa-chart-pie text-primary"></i> Transparent Risk Correlation Breakdown</h4>
+                        <span class="methodology-tag">Deterministic Weighted Heuristic Engine</span>
+                    </div>
+
+                    <div class="risk-breakdown-grid">
+                        <div class="risk-card overall-card">
+                            <span class="risk-card-title">Overall Risk Assessment</span>
+                            <div class="risk-score-big" id="invOverallScore">92%</div>
+                            <span class="severity-pill" id="invOverallSeverity">CRITICAL</span>
+                        </div>
+                        <div class="risk-card">
+                            <span class="risk-card-title">ML Threat Probability</span>
+                            <div class="risk-sub-val" id="invSubML">96%</div>
+                            <div class="sub-progress-bar"><div class="sub-fill" id="invFillML" style="width: 96%;"></div></div>
+                            <span class="sub-note">14,022-feat Soft Voting</span>
+                        </div>
+                        <div class="risk-card">
+                            <span class="risk-card-title">IOC Threat Intel Risk</span>
+                            <div class="risk-sub-val" id="invSubIOC">95%</div>
+                            <div class="sub-progress-bar"><div class="sub-fill danger" id="invFillIOC" style="width: 95%;"></div></div>
+                            <span class="sub-note">Verified Malicious Signature</span>
+                        </div>
+                        <div class="risk-card">
+                            <span class="risk-card-title">Sender Identity Risk</span>
+                            <div class="risk-sub-val" id="invSubSender">60%</div>
+                            <div class="sub-progress-bar"><div class="sub-fill warning" id="invFillSender" style="width: 60%;"></div></div>
+                            <span class="sub-note">Free Email / Impersonation</span>
+                        </div>
+                        <div class="risk-card">
+                            <span class="risk-card-title">Link & TLD Risk</span>
+                            <div class="risk-sub-val" id="invSubLink">85%</div>
+                            <div class="sub-progress-bar"><div class="sub-fill danger" id="invFillLink" style="width: 85%;"></div></div>
+                            <span class="sub-note">Suspicious TLD / Shortener</span>
+                        </div>
+                        <div class="risk-card">
+                            <span class="risk-card-title">Content Deception Risk</span>
+                            <div class="risk-sub-val" id="invSubContent">95%</div>
+                            <div class="sub-progress-bar"><div class="sub-fill danger" id="invFillContent" style="width: 95%;"></div></div>
+                            <span class="sub-note">Micro-Fee / Upfront Charge</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tri-Layer Explainability System -->
+                <div class="inv-section">
+                    <div class="inv-section-header">
+                        <h4><i class="fa-solid fa-layer-group text-primary"></i> Tri-Layer Explainability Evidence</h4>
+                    </div>
+
+                    <div class="tri-layer-tabs">
+                        <button class="tri-tab active" data-tri-tab="tri-layer-ioc"><i class="fa-solid fa-fingerprint"></i> Layer 1: IOC Threat Intelligence (<span id="invIocCount">0</span>)</button>
+                        <button class="tri-tab" data-tri-tab="tri-layer-rules"><i class="fa-solid fa-shield-virus"></i> Layer 2: Security Rule Signals (<span id="invRulesCount">0</span>)</button>
+                        <button class="tri-tab" data-tri-tab="tri-layer-ml"><i class="fa-solid fa-brain"></i> Layer 3: ML Attribution & Consensus</button>
+                    </div>
+
+                    <div class="tri-layer-content">
+                        <!-- Layer 1: Extracted IOCs Table -->
+                        <div class="tri-pane active" id="tri-layer-ioc">
+                            <div class="table-responsive">
+                                <table class="benchmark-table ioc-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>Defanged Indicator Value</th>
+                                            <th>Source Context</th>
+                                            <th>Threat Intel Status</th>
+                                            <th>Threat Category / Notes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="invIocTableBody">
+                                        <!-- Dynamically filled by app.js -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Layer 2: Rule & Linguistic Signals -->
+                        <div class="tri-pane" id="tri-layer-rules">
+                            <div class="triggers-list" id="invRulesList">
+                                <!-- Dynamically filled by app.js -->
+                            </div>
+                        </div>
+
+                        <!-- Layer 3: ML Evidence & Token Attributions -->
+                        <div class="tri-pane" id="tri-layer-ml">
+                            <div class="hitl-two-col-grid">
+                                <div class="hitl-panel">
+                                    <h5>Multi-Model Classifier Consensus</h5>
+                                    <table class="consensus-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Algorithm</th>
+                                                <th>Decision</th>
+                                                <th>Confidence</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="invConsensusBody">
+                                            <!-- Dynamically filled -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="hitl-panel">
+                                    <h5>Bayesian Prior & Evidence Calibration</h5>
+                                    <div class="math-stats-card">
+                                        <div class="math-row">
+                                            <span>Prior Log-Odds ($L_0$):</span>
+                                            <strong id="invBayesPrior">+0.43</strong>
+                                        </div>
+                                        <div class="math-row">
+                                            <span>Evidence Likelihood Ratio ($\Delta L$):</span>
+                                            <strong id="invBayesEvidence">+3.82</strong>
+                                        </div>
+                                        <div class="math-row">
+                                            <span>Calibrated Posterior ($P(\text{Spam}\mid X)$):</span>
+                                            <strong class="text-danger" id="invBayesRisk">0.96</strong>
+                                        </div>
+                                    </div>
+                                    <h5 style="margin-top: 14px;">Key Token Attributions</h5>
+                                    <div class="token-pills-wrap" id="invTokenPills">
+                                        <!-- Dynamically filled -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chronological Security Event Audit Timeline -->
+                <div class="inv-section">
+                    <div class="inv-section-header">
+                        <h4><i class="fa-solid fa-clock-rotate-left text-primary"></i> Chronological Security Event Timeline</h4>
+                        <span class="methodology-tag">Immutable Audit Trail</span>
+                    </div>
+
+                    <div class="timeline-container" id="invTimelineContainer">
+                        <!-- Dynamically filled by app.js -->
+                    </div>
+                </div>
+
+                <!-- Analyst HITL Triage & Feedback Action Bar -->
+                <div class="inv-section feedback-triage-section">
+                    <div class="inv-section-header">
+                        <h4><i class="fa-solid fa-user-shield text-primary"></i> Analyst Triage Feedback & Continuous Learning</h4>
+                    </div>
+                    <div class="feedback-action-bar" style="border: none; background: transparent; padding: 0;">
+                        <div class="feedback-prompt-col">
+                            <div class="feedback-title"><strong>Confirm Verified Classification:</strong></div>
+                            <div class="feedback-subtitle">Feeds into tenant-isolated validation queue with anti-poisoning gates.</div>
+                        </div>
+                        <div class="feedback-btn-group">
+                            <button class="btn btn-fb btn-fb-safe" id="btnInvFeedbackSafe" data-label="SAFE">
+                                <i class="fa-solid fa-check"></i> <span>Safe / Legitimate</span>
+                            </button>
+                            <button class="btn btn-fb btn-fb-spam" id="btnInvFeedbackSpam" data-label="SPAM">
+                                <i class="fa-solid fa-triangle-exclamation"></i> <span>Phishing / Scam</span>
+                            </button>
+                            <button class="btn btn-fb btn-fb-unsure" id="btnInvFeedbackUnsure" data-label="UNSURE">
+                                <i class="fa-solid fa-question"></i> <span>Unsure / Ambiguous</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="closeInvModalFooterBtn">Close Investigation</button>
             </div>
         </div>
     </div>
