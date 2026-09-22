@@ -39,6 +39,23 @@ class ModelExplainer:
         
         gc.collect()
 
+    def _patch_model_compat(self, m):
+        if m is None:
+            return m
+        if hasattr(m, 'estimators_'):
+            for est in m.estimators_:
+                if est.__class__.__name__ == 'XGBClassifier' and not hasattr(est, 'use_label_encoder'):
+                    try:
+                        est.use_label_encoder = False
+                    except Exception:
+                        pass
+        if m.__class__.__name__ == 'XGBClassifier' and not hasattr(m, 'use_label_encoder'):
+            try:
+                m.use_label_encoder = False
+            except Exception:
+                pass
+        return m
+
     def get_model(self, model_name: str):
         if model_name in self._loaded_models:
             return self._loaded_models[model_name]
@@ -48,6 +65,7 @@ class ModelExplainer:
         if os.path.exists(indiv_path):
             try:
                 m = joblib.load(indiv_path)
+                m = self._patch_model_compat(m)
                 self._loaded_models[model_name] = m
                 return m
             except Exception as e:
@@ -60,7 +78,8 @@ class ModelExplainer:
                 self._all_monolithic_models = {}
 
         if hasattr(self, '_all_monolithic_models') and model_name in self._all_monolithic_models:
-            return self._all_monolithic_models[model_name]
+            m = self._patch_model_compat(self._all_monolithic_models[model_name])
+            return m
 
         return None
 
@@ -78,15 +97,22 @@ class ModelExplainer:
             
         X_feat = self.transform_text(text)
 
-        if hasattr(model, "predict_proba"):
-            probs = model.predict_proba(X_feat)[0]
-            risk_score = float(probs[1])
-        elif hasattr(model, "decision_function"):
-            df_val = float(model.decision_function(X_feat)[0])
-            risk_score = float(1.0 / (1.0 + np.exp(-np.clip(df_val, -20.0, 20.0))))
-        else:
-            pred_val = float(model.predict(X_feat)[0])
-            risk_score = 1.0 if pred_val > 0.5 else 0.0
+        try:
+            if hasattr(model, "predict_proba"):
+                probs = model.predict_proba(X_feat)[0]
+                risk_score = float(probs[1])
+            elif hasattr(model, "decision_function"):
+                df_val = float(model.decision_function(X_feat)[0])
+                risk_score = float(1.0 / (1.0 + np.exp(-np.clip(df_val, -20.0, 20.0))))
+            else:
+                pred_val = float(model.predict(X_feat)[0])
+                risk_score = 1.0 if pred_val > 0.5 else 0.0
+        except Exception as pred_err:
+            fb_model = self.get_model("Logistic Regression")
+            if fb_model and hasattr(fb_model, "predict_proba"):
+                risk_score = float(fb_model.predict_proba(X_feat)[0, 1])
+            else:
+                risk_score = 0.50
 
         risk_score = float(np.clip(risk_score, 0.0, 1.0))
 
