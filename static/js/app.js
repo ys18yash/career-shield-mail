@@ -2555,7 +2555,10 @@ function renderInvestigationModal(alert, timeline) {
         const vEl = document.getElementById(valId);
         const fEl = document.getElementById(fillId);
         if (vEl) vEl.textContent = `${val}%`;
-        if (fEl) fEl.style.width = `${val}%`;
+        if (fEl) {
+            fEl.style.width = `${val}%`;
+            fEl.className = 'sub-fill ' + (val >= 70 ? 'danger' : (val >= 40 ? 'warning' : 'success'));
+        }
     };
 
     setSubMeter('invSubML', 'invFillML', subML);
