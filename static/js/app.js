@@ -1657,35 +1657,31 @@ async function connectGmail() {
     }
 
     try {
-        const data = await safeFetchJson('/api/gmail/connect', {
+        const res = await fetch('/api/gmail/connect', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: email, app_password: appPassword })
         });
+        const data = await res.json().catch(() => ({}));
 
-        if (data && data.status === 'connected') {
+        if (res.ok && data && data.status === 'connected') {
             State.isGmailConnected = true;
             State.connectedGmailEmail = email;
             State.isLiveMode = true;
             updateGmailUIState(true, email);
             showToast(`🎉 Connected to ${email}! Fetching latest ${limit} live emails...`);
+            const modal = document.getElementById('gmailModal');
+            if (modal) modal.style.display = 'none';
+            if (pwdInput) pwdInput.value = '';
             await fetchLiveGmail(limit);
         } else {
-            // Standalone client mode fallback
-            State.isGmailConnected = true;
-            State.connectedGmailEmail = email;
-            State.isLiveMode = true;
-            updateGmailUIState(true, email);
-            showToast(`🛡️ Standalone Session Active for ${email}! Simulated live stream activated.`);
+            const errDetail = data.detail || 'Authentication failed';
+            alert(`⚠️ Gmail IMAP Authentication Error:\n\n${errDetail}\n\nPlease verify:\n1. You are using a 16-character Google App Password (generated from https://myaccount.google.com/apppasswords), NOT your normal Gmail password.\n2. IMAP is enabled in your Gmail: Settings -> Forwarding and POP/IMAP -> Enable IMAP.\n3. 2-Step Verification is enabled on your Google account.`);
+            showToast(`❌ Connection Failed: ${errDetail}`);
         }
-
-        const modal = document.getElementById('gmailModal');
-        if (modal) modal.style.display = 'none';
-        if (pwdInput) pwdInput.value = '';
-
     } catch (err) {
         console.error("connectGmail error:", err);
-        showToast(`❌ Connection notice: ${err.message}`);
+        showToast(`❌ Network Connection error: ${err.message}`);
     } finally {
         if (connectBtn) {
             connectBtn.disabled = false;
@@ -1696,7 +1692,7 @@ async function connectGmail() {
 
 async function disconnectGmail() {
     try {
-        await safeFetchJson('/api/gmail/disconnect', { method: 'POST' });
+        await fetch('/api/gmail/disconnect', { method: 'POST' });
         State.isGmailConnected = false;
         State.connectedGmailEmail = null;
         State.isLiveMode = false;
@@ -1719,7 +1715,7 @@ async function fetchLiveGmail(limit = 50, folder = null) {
 
     try {
         const listElem = document.getElementById('emailList');
-        if (listElem && State.emails.length === 0) {
+        if (listElem) {
             listElem.innerHTML = `
                 <div style="text-align: center; padding: 60px 20px; color: var(--text-muted);">
                     <i class="fa-solid fa-spinner fa-spin" style="font-size: 2.5rem; margin-bottom: 12px; color: #0b57d0;"></i>
@@ -1729,7 +1725,14 @@ async function fetchLiveGmail(limit = 50, folder = null) {
             `;
         }
 
-        let liveData = await safeFetchJson(`/api/gmail/fetch?model=${encodeURIComponent(State.activeModel)}&limit=${limit}&folder=${encodeURIComponent(folder)}`);
+        const res = await fetch(`/api/gmail/fetch?model=${encodeURIComponent(State.activeModel)}&limit=${limit}&folder=${encodeURIComponent(folder)}`);
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            showToast(`⚠️ Gmail Sync Notice: ${errData.detail || 'Could not fetch live emails'}`);
+            await loadFeed(false);
+            return null;
+        }
+        const liveData = await res.json();
 
         if (liveData && liveData.all) {
             State.emails = liveData.all || [];
