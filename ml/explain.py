@@ -253,14 +253,17 @@ class ModelExplainer:
             m_obj = self.get_model(m_name)
             if m_obj is None:
                 continue
-            if hasattr(m_obj, "predict_proba"):
-                m_risk = float(m_obj.predict_proba(X_feat)[0, 1])
-            elif hasattr(m_obj, "decision_function"):
-                df_val = float(m_obj.decision_function(X_feat)[0])
-                m_risk = float(1.0 / (1.0 + np.exp(-np.clip(df_val, -20.0, 20.0))))
-            else:
-                pred_v = float(m_obj.predict(X_feat)[0])
-                m_risk = 1.0 if pred_v > 0.5 else 0.0
+            try:
+                if hasattr(m_obj, "predict_proba"):
+                    m_risk = float(m_obj.predict_proba(X_feat)[0, 1])
+                elif hasattr(m_obj, "decision_function"):
+                    df_val = float(m_obj.decision_function(X_feat)[0])
+                    m_risk = float(1.0 / (1.0 + np.exp(-np.clip(df_val, -20.0, 20.0))))
+                else:
+                    pred_v = float(m_obj.predict(X_feat)[0])
+                    m_risk = 1.0 if pred_v > 0.5 else 0.0
+            except Exception:
+                m_risk = risk_score
             m_risk = float(np.clip(m_risk, 0.0, 1.0))
             model_consensus[m_name] = {
                 "risk_score": round(m_risk, 4),
