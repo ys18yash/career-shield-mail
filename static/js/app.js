@@ -341,6 +341,21 @@ function setupEventListeners() {
         });
     }
 
+    const syncLiveBtn = document.getElementById('syncLiveGmailBtn');
+    if (syncLiveBtn) {
+        syncLiveBtn.addEventListener('click', async () => {
+            if (State.isGmailConnected) {
+                showToast("🔄 Fetching real emails from your Gmail inbox...");
+                await fetchLiveGmail(50, State.selectedGmailFolder);
+                showToast(`✅ Synced ${State.emails.length} emails from your Gmail!`);
+            } else {
+                const modal = document.getElementById('gmailModal');
+                if (modal) modal.style.display = 'flex';
+                showToast("🔐 Enter your Gmail address & 16-character App Password to connect.");
+            }
+        });
+    }
+
     const simBtn = document.getElementById('simulateIncomingBtn');
     if (simBtn) simBtn.addEventListener('click', () => simulateIncomingEmail());
 

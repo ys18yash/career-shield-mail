@@ -227,19 +227,19 @@
                         <div class="toolbar-left">
                             <h2 class="inbox-heading" id="inboxViewHeading">Inbox</h2>
                             
-                            <button class="icon-btn-round" id="refreshBtn" title="Refresh feed (Live IMAP sync)">
+                            <button class="icon-btn-round" id="refreshBtn" title="Refresh mailbox / feed">
                                 <i class="fa-solid fa-rotate-right"></i>
                             </button>
                             
-                            <button class="btn btn-simulate" id="simulateIncomingBtn" title="Fetch latest real emails or simulate stream">
-                                <i class="fa-solid fa-bolt"></i>
-                                <span id="syncBtnText">Sync Live Gmail</span>
+                            <button class="btn btn-primary" id="syncLiveGmailBtn" title="Connect and fetch real emails from your Gmail account" style="background: #0b57d0; color: #fff; border-radius: 20px; font-weight: 500; font-size: 0.85rem; padding: 6px 14px;">
+                                <i class="fa-brands fa-google"></i>
+                                <span id="syncBtnText">Sync Real Gmail</span>
                             </button>
                             
-                            <span class="feed-source-badge sim" id="feedSourceBadge">
+                            <button class="btn btn-simulate" id="simulateIncomingBtn" title="Simulate synthetic scam/legit email for testing">
                                 <i class="fa-solid fa-flask"></i>
-                                <span>Demo Simulation</span>
-                            </span>
+                                <span>Demo Simulation Stream</span>
+                            </button>
 
                             <select class="toolbar-select" id="gmailFolderSelect" title="Select Gmail mailbox folder to scan">
                                 <option value="INBOX" selected>📁 Inbox</option>
